@@ -1,5 +1,5 @@
 // 2D Pixel Art & Retro Isometric Studio Engine for MOONCRUST // PIXEL AI STUDIO
-// Canvas simulator with animated environment, workstations, server racks, and autonomous agents
+// Interactive Canvas simulator with click-to-move, waypoint pings, and autonomous agents
 
 class PixelStudioEngine {
   constructor(canvasId) {
@@ -12,12 +12,12 @@ class PixelStudioEngine {
     this.frameTick = 0;
     this.isRunning = true;
     this.speed = 1;
-    this.selectedAgentId = null;
+    this.selectedAgentId = 'uiux'; // Default selected
 
-    // Steam particles for coffee machine
+    // Visual FX pools
     this.steamParticles = [];
-    // Twinkling stars for lunar window
     this.stars = [];
+    this.waypoints = []; // Click-to-move visual pings
     this.initStars();
 
     // Workstation locations
@@ -45,7 +45,7 @@ class PixelStudioEngine {
         state: 'WORKING', // WORKING, IDLE, WALKING
         dir: 1,
         stationId: 'uiux',
-        isSelected: false,
+        isSelected: true,
         stats: { tasksCompleted: 42, efficiency: '99.4%', focus: 'Design Tokens', status: 'Active' },
         bubble: { text: 'Crafting design tokens...', timer: 120 },
         nextActionTick: 180
@@ -159,6 +159,16 @@ class PixelStudioEngine {
       }
     }
 
+    // Update Waypoint Pings
+    for (let i = this.waypoints.length - 1; i >= 0; i--) {
+      const wp = this.waypoints[i];
+      wp.life--;
+      wp.radius += 0.8;
+      if (wp.life <= 0) {
+        this.waypoints.splice(i, 1);
+      }
+    }
+
     // Autonomous behavior update for each agent (if not locked by pipeline)
     this.agents.forEach(agent => {
       // Decrement speech bubble timer
@@ -177,7 +187,7 @@ class PixelStudioEngine {
       if (dist > 2) {
         agent.state = 'WALKING';
         agent.dir = dx >= 0 ? 1 : -1;
-        const moveSpeed = 1.6;
+        const moveSpeed = 1.8;
         agent.x += (dx / dist) * moveSpeed;
         agent.y += (dy / dist) * moveSpeed;
       } else {
@@ -187,7 +197,7 @@ class PixelStudioEngine {
         if (agent.state === 'WALKING') {
           // If returned to personal station, switch to working
           const homeStation = this.stations[agent.stationId];
-          if (Math.hypot(agent.x - homeStation.x, agent.y - homeStation.y) < 5) {
+          if (Math.hypot(agent.x - homeStation.x, agent.y - homeStation.y) < 8) {
             agent.state = 'WORKING';
           } else {
             agent.state = 'IDLE';
@@ -205,8 +215,8 @@ class PixelStudioEngine {
   }
 
   decideNextAutonomousAction(agent) {
-    // Schedule next decision in 240-420 ticks (4 to 7 seconds)
-    agent.nextActionTick = this.frameTick + 240 + Math.floor(Math.random() * 180);
+    // Schedule next decision in 260-440 ticks (4.5 to 7.5 seconds)
+    agent.nextActionTick = this.frameTick + 260 + Math.floor(Math.random() * 180);
 
     // If currently away from home station, head back home
     const homeStation = this.stations[agent.stationId];
@@ -216,12 +226,12 @@ class PixelStudioEngine {
       agent.targetX = homeStation.x;
       agent.targetY = homeStation.y;
       const returnQuotes = {
-        uiux: 'Back to the wireframes!',
-        fe: 'Resuming code sprint...',
-        be: 'Checking API endpoints...',
-        sec: 'Back to radar sweep!'
+        uiux: 'Kembali merapikan wireframe!',
+        fe: 'Lanjut nulis komponen UI...',
+        be: 'Memeriksa endpoint API...',
+        sec: 'Lanjut radar sweep & CTF!'
       };
-      this.triggerAgentBubble(agent.id, returnQuotes[agent.id] || 'Back to work!', 100);
+      this.triggerAgentBubble(agent.id, returnQuotes[agent.id] || 'Kembali bekerja!', 100);
       return;
     }
 
@@ -232,15 +242,18 @@ class PixelStudioEngine {
     if (choice === 'coffee') {
       agent.targetX = this.stations.coffee.x + (Math.random() * 20 - 10);
       agent.targetY = this.stations.coffee.y + 20;
-      this.triggerAgentBubble(agent.id, 'Need fresh espresso ☕', 120);
+      this.triggerAgentBubble(agent.id, 'Ambil kopi espresso dulu ☕', 120);
+      this.logTerminal(`[${agent.name}] Istirahat sejenak ke mesin kopi.`);
     } else if (choice === 'whiteboard') {
       agent.targetX = this.stations.whiteboard.x + (Math.random() * 30 - 15);
       agent.targetY = this.stations.whiteboard.y + 25;
-      this.triggerAgentBubble(agent.id, 'Reviewing sprint tasks 📌', 120);
+      this.triggerAgentBubble(agent.id, 'Cek backlog tugas di papan 📋', 120);
+      this.logTerminal(`[${agent.name}] Meninjau sprint board di Whiteboard.`);
     } else if (choice === 'serverRack' && (agent.id === 'be' || agent.id === 'sec')) {
       agent.targetX = this.stations.serverRack.x - 20;
       agent.targetY = this.stations.serverRack.y + 20;
-      this.triggerAgentBubble(agent.id, 'Monitoring server load 🖥️', 120);
+      this.triggerAgentBubble(agent.id, 'Cek status load server 🖥️', 120);
+      this.logTerminal(`[${agent.name}] Memeriksa suhu & koneksi mainframe server.`);
     } else if (choice === 'visitPeer') {
       // Pick another agent to chat with
       const otherAgents = this.agents.filter(a => a.id !== agent.id);
@@ -249,20 +262,21 @@ class PixelStudioEngine {
       agent.targetY = peer.y;
 
       const chatDialogues = {
-        uiux: [`Hey ${peer.name}, reviewed the user flow?`, 'New micro-interaction spec ready!'],
-        fe: [`Syncing UI components with ${peer.name}`, 'Bundle size under 32KB!'],
-        be: [`Schema migration 100% verified`, `Passing JWT auth to ${peer.name}`],
-        sec: [`Zero vulnerabilities detected!`, `Running CTF reverse challenge...`]
+        uiux: [`Halo ${peer.name}, user flow sudah sesuai?`, 'Token palet warna siap diintegrasikan!'],
+        fe: [`Sinkronisasi komponen Tailwind dengan ${peer.name}`, 'Ukuran bundle teroptimasi < 30KB!'],
+        be: [`Validasi skema database 100% lulus`, `Mengirim payload JWT auth ke ${peer.name}`],
+        sec: [`Audit OWASP: 0 celah kritis ditemukan!`, `Simulasi decrypt payload CTF selesai.`]
       };
       const dialog = chatDialogues[agent.id][Math.floor(Math.random() * chatDialogues[agent.id].length)];
       this.triggerAgentBubble(agent.id, dialog, 140);
+      this.logTerminal(`[${agent.name}] Berdiskusi dengan [${peer.name}]: "${dialog}"`);
     } else {
       // Stay working and quote domain thought
       const workThoughts = {
-        uiux: ['Figma tokens synced!', 'Checking WCAG AA contrast...', 'Refining mobile touch targets'],
-        fe: ['Flexbox grid perfectly aligned', 'Adding buttery CSS transitions', 'Optimizing WebGL canvas render'],
-        be: ['Database vacuumed: 1.2ms', 'REST API response 200 OK', 'JWT bearer tokens refreshed'],
-        sec: ['OWASP Top 10 checklist: CLEAR', 'Cipher decrypted: SHA-256 validated', 'Payload sanitization locked']
+        uiux: ['Figma tokens synced!', 'Cek kontras WCAG AA...', 'Merapikan touch target mobile'],
+        fe: ['Flexbox & Grid rapi sempurna', 'Menambahkan transisi CSS halus', 'Optimasi render DOM'],
+        be: ['Query database selesai: 1.4ms', 'REST API response 200 OK', 'JWT bearer token diperbarui'],
+        sec: ['Checklist OWASP Top 10: CLEAR', 'Cipher decrypted: SHA-256 valid', 'Sanitasi input aktif']
       };
       const quote = workThoughts[agent.id][Math.floor(Math.random() * workThoughts[agent.id].length)];
       this.triggerAgentBubble(agent.id, quote, 130);
@@ -279,6 +293,7 @@ class PixelStudioEngine {
     }
   }
 
+  // Interactive Click on Canvas: Agent selection or Click-to-Move
   handleClick(e) {
     const rect = this.canvas.getBoundingClientRect();
     const scaleX = this.canvas.width / rect.width;
@@ -286,7 +301,9 @@ class PixelStudioEngine {
     const clickX = (e.clientX - rect.left) * scaleX;
     const clickY = (e.clientY - rect.top) * scaleY;
 
-    // Check if an agent was clicked (bounding box around agent)
+    if (window.studioAudio) window.studioAudio.init();
+
+    // Check if an agent was clicked directly
     let agentFound = false;
     this.agents.forEach(agent => {
       const dist = Math.hypot(clickX - (agent.x + 24), clickY - (agent.y + 26));
@@ -296,15 +313,42 @@ class PixelStudioEngine {
       }
     });
 
-    if (!agentFound) {
-      // Check if a station was clicked
-      for (const [key, station] of Object.entries(this.stations)) {
-        const dist = Math.hypot(clickX - station.x, clickY - station.y);
-        if (dist < 45) {
-          if (window.studioAudio) window.studioAudio.playKey();
-          this.showStationInfo(key);
-          break;
+    if (agentFound) return;
+
+    // Check if a station was clicked directly
+    let stationFound = false;
+    for (const [key, station] of Object.entries(this.stations)) {
+      const dist = Math.hypot(clickX - station.x, clickY - station.y);
+      if (dist < 42) {
+        stationFound = true;
+        this.showStationInfo(key);
+
+        // If an agent is selected, send that agent to the clicked station!
+        if (this.selectedAgentId) {
+          const selected = this.agents.find(a => a.id === this.selectedAgentId);
+          if (selected) {
+            selected.targetX = station.x;
+            selected.targetY = station.y + (key === 'coffee' || key === 'whiteboard' ? 20 : 0);
+            this.triggerAgentBubble(selected.id, `Menuju ke ${station.name}!`, 120);
+            this.logTerminal(`[User Command] Mengirim [${selected.name}] ke ${station.name}.`);
+          }
         }
+        break;
+      }
+    }
+
+    if (stationFound) return;
+
+    // Clicked on empty floor: CLICK-TO-MOVE for selected agent!
+    if (clickY > 154 && this.selectedAgentId) {
+      const selected = this.agents.find(a => a.id === this.selectedAgentId);
+      if (selected) {
+        selected.targetX = Math.round(clickX - 24);
+        selected.targetY = Math.round(clickY - 26);
+        this.waypoints.push({ x: clickX, y: clickY, radius: 4, life: 25, color: '#00f3ff' });
+        this.triggerAgentBubble(selected.id, 'Siap, bergerak ke titik lokasi! 📍', 100);
+        if (window.studioAudio) window.studioAudio.playKey();
+        this.logTerminal(`[User Command] Menggerakkan [${selected.name}] ke koordinat (${Math.round(clickX)}, ${Math.round(clickY)}).`);
       }
     }
   }
@@ -316,14 +360,14 @@ class PixelStudioEngine {
 
     if (agent) {
       if (window.studioAudio) window.studioAudio.playKey();
-      // Greet user
       const greetings = {
-        uiux: 'UI/UX Bot online! Ready to design wireframes & design systems.',
-        fe: 'FE Bot reporting! Ready to code responsive HTML5/CSS/JS components.',
-        be: 'BE Bot standing by! Ready for SQL schemas, REST APIs & algorithms.',
-        sec: 'SEC Bot deployed! Ready for OWASP security audit & CTF forensics.'
+        uiux: 'UI/UX-Bot siap! Mau dirancang wireframe atau design system apa?',
+        fe: 'FE-Bot online! Komponen HTML5 & Tailwind siap dirakit.',
+        be: 'BE-Bot aktif! Skema SQL, REST API & auth siap dieksekusi.',
+        sec: 'SEC-Bot siaga! Siap audit celah OWASP & uji tantangan CTF.'
       };
-      this.triggerAgentBubble(agent.id, greetings[agent.id] || 'Agent ready!', 140);
+      this.triggerAgentBubble(agent.id, greetings[agent.id] || 'Agen siap bekerja!', 140);
+      this.logTerminal(`[Select] [${agent.name}] dipilih. Siap menerima instruksi langsung.`);
 
       // Update Inspector UI in HTML HUD
       if (window.updateInspectorCard) {
@@ -332,22 +376,75 @@ class PixelStudioEngine {
     }
   }
 
+  // Direct manual actions for selected agent
+  commandSelectedAgent(action) {
+    if (!this.selectedAgentId) return;
+    const agent = this.agents.find(a => a.id === this.selectedAgentId);
+    if (!agent) return;
+
+    if (action === 'work') {
+      const home = this.stations[agent.stationId];
+      agent.targetX = home.x;
+      agent.targetY = home.y;
+      agent.state = 'WORKING';
+      this.triggerAgentBubble(agent.id, 'Fokus penuh: kembali bekerja di workstation! 💻', 130);
+      this.logTerminal(`[User Command] [${agent.name}] kembali bekerja di ${home.name}.`);
+    } else if (action === 'coffee') {
+      agent.targetX = this.stations.coffee.x;
+      agent.targetY = this.stations.coffee.y + 20;
+      this.triggerAgentBubble(agent.id, 'Menuju mesin espresso untuk isi energi ☕', 130);
+      this.logTerminal(`[User Command] [${agent.name}] diperintahkan mengambil kopi.`);
+    } else if (action === 'whiteboard') {
+      agent.targetX = this.stations.whiteboard.x;
+      agent.targetY = this.stations.whiteboard.y + 25;
+      this.triggerAgentBubble(agent.id, 'Meneliti tugas di papan tulis proyek 📋', 130);
+      this.logTerminal(`[User Command] [${agent.name}] dikirim ke Whiteboard.`);
+    } else if (action === 'server') {
+      agent.targetX = this.stations.serverRack.x - 20;
+      agent.targetY = this.stations.serverRack.y + 20;
+      this.triggerAgentBubble(agent.id, 'Memeriksa kluster server mainframe 🖥️', 130);
+      this.logTerminal(`[User Command] [${agent.name}] memeriksa rak server.`);
+    } else if (action === 'chat') {
+      const thoughts = [
+        'Semua arsitektur siap diuji coba secara riil!',
+        'Efisiensi kerja tim saat ini stabil di 99.6%.',
+        'Ketik topik apa saja di kolom perintah untuk menyuruh kami kerja!'
+      ];
+      const t = thoughts[Math.floor(Math.random() * thoughts.length)];
+      this.triggerAgentBubble(agent.id, t, 140);
+      this.logTerminal(`[Status Query] [${agent.name}]: "${t}"`);
+    }
+    if (window.studioAudio) window.studioAudio.playKey();
+  }
+
   showStationInfo(stationKey) {
     const s = this.stations[stationKey];
     if (!s) return;
     const tips = {
-      coffee: 'Caffeine Fuel Station: Essential for high-frequency vibe coding!',
-      whiteboard: 'Sprint Whiteboard: UI/UX, FE, BE, SEC collaborative task roadmap.',
-      serverRack: 'Mainframe Rack: 8 Server blades, active cooling, zero downtime.',
-      uiux: 'UI/UX Workstation: Drawing tablet, wireframes, and design system swatches.',
-      fe: 'Frontend Rig: Dual 4K monitors running Vite, Tailwind & responsive preview.',
-      be: 'Backend Console: Postgres & SQLite databases, REST endpoints, Node.js runtime.',
-      sec: 'SecOps Radar Lab: Continuous network vulnerability sweeps & CTF solver.'
+      coffee: 'Caffeine Fuel Hub: Tempat ngopi santai agen sebelum sprint kode intensif.',
+      whiteboard: 'Agile Whiteboard: Papan pemetaan arsitektur, user flow, dan sprint status.',
+      serverRack: 'Mainframe Cluster: 8 server blade redundan, pendingin aktif, uptime 99.99%.',
+      uiux: 'Meja UI/UX: Dilengkapi Drawing Tablet layar sentuh, palet warna, dan wireframe mockup.',
+      fe: 'Rig Frontend: Dual monitor 4K, keyboard mekanikal RGB, preview live layout.',
+      be: 'Konsol Backend: Terminal Linux, monitor skema ERD PostgreSQL, dan pipeline API.',
+      sec: 'Lab SecOps: Radar aktif 360°, monitor matrix hijau, shield verifikasi celah OWASP.'
     };
     const tipText = tips[stationKey] || s.name;
     const banner = document.getElementById('liveStatusTicker');
     if (banner) {
-      banner.innerHTML = `<span style="color:#00f3ff;">[STATION FOCUS]</span> ${tipText}`;
+      banner.innerHTML = `<span style="color:#00f3ff;">[STASIUN]</span> ${tipText}`;
+    }
+  }
+
+  logTerminal(msg) {
+    const logBody = document.getElementById('terminalLogBody');
+    if (logBody) {
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'terminal-log-row';
+      div.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-content">${msg}</span>`;
+      logBody.appendChild(div);
+      logBody.scrollTop = logBody.scrollHeight;
     }
   }
 
@@ -379,28 +476,29 @@ class PixelStudioEngine {
     // 6. WORKSTATIONS (DESKS & GEAR)
     this.renderWorkstations(ctx);
 
-    // 7. AUTONOMOUS AGENTS (SORTED BY Y FOR DEPTH)
+    // 7. WAYPOINT CLICK PINGS
+    this.renderWaypoints(ctx);
+
+    // 8. AUTONOMOUS AGENTS (SORTED BY Y FOR DEPTH)
     const sortedAgents = [...this.agents].sort((a, b) => a.y - b.y);
     sortedAgents.forEach(agent => {
       window.pixelSprites.drawAgent(ctx, agent, this.frameTick);
     });
 
-    // 8. COFFEE STEAM PARTICLES
+    // 9. COFFEE STEAM PARTICLES
     this.renderCoffeeSteam(ctx);
 
-    // 9. AMBIENT SCANLINE & VIGNETTE EFFECT
+    // 10. AMBIENT SCANLINE & VIGNETTE EFFECT
     this.renderVignette(ctx);
   }
 
   renderBackWall(ctx) {
-    // Upper wall background
     const grad = ctx.createLinearGradient(0, 0, 0, 150);
     grad.addColorStop(0, '#0a0d18');
     grad.addColorStop(1, '#151928');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, this.width, 150);
 
-    // Wall grid / panel seam lines
     ctx.strokeStyle = '#1e2538';
     ctx.lineWidth = 1;
     for (let x = 0; x < this.width; x += 40) {
@@ -409,7 +507,6 @@ class PixelStudioEngine {
       ctx.lineTo(x, 150);
       ctx.stroke();
     }
-    // Baseboard divider trim with cyan accent
     ctx.fillStyle = '#0f1422';
     ctx.fillRect(0, 146, this.width, 8);
     ctx.fillStyle = 'rgba(0, 243, 255, 0.4)';
@@ -422,33 +519,29 @@ class PixelStudioEngine {
     const winW = 280;
     const winH = 95;
 
-    // Window frame border
     ctx.fillStyle = '#0a0f1d';
     ctx.fillRect(winX - 4, winY - 4, winW + 8, winH + 8);
     ctx.strokeStyle = '#273553';
     ctx.lineWidth = 3;
     ctx.strokeRect(winX - 4, winY - 4, winW + 8, winH + 8);
 
-    // Window interior sky
     const skyGrad = ctx.createLinearGradient(winX, winY, winX, winY + winH);
     skyGrad.addColorStop(0, '#02040a');
     skyGrad.addColorStop(1, '#081226');
     ctx.fillStyle = skyGrad;
     ctx.fillRect(winX, winY, winW, winH);
 
-    // Twinkling stars
     this.stars.forEach(s => {
       const alpha = 0.4 + 0.6 * Math.abs(Math.sin((this.frameTick + s.twinkleOffset) * 0.05));
       ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
       ctx.fillRect(s.x, s.y, s.size, s.size);
     });
 
-    // Crescent Moon / Lunar Surface
     ctx.fillStyle = '#e2e8f0';
     ctx.beginPath();
     ctx.arc(winX + 225, winY + 36, 18, 0, Math.PI * 2);
     ctx.fill();
-    // Moon craters
+
     ctx.fillStyle = '#cbd5e1';
     ctx.beginPath();
     ctx.arc(winX + 220, winY + 32, 4, 0, Math.PI * 2);
@@ -456,7 +549,6 @@ class PixelStudioEngine {
     ctx.arc(winX + 225, winY + 45, 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Satellite passing by
     const satX = winX + ((this.frameTick * 0.4) % (winW + 30)) - 10;
     const satY = winY + 48;
     ctx.fillStyle = '#00f3ff';
@@ -465,7 +557,6 @@ class PixelStudioEngine {
     ctx.fillRect(satX - 3, satY - 1, 2, 4);
     ctx.fillRect(satX + 5, satY - 1, 2, 4);
 
-    // Window crossbars
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -483,24 +574,19 @@ class PixelStudioEngine {
 
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.font = 'bold 15px "Press Start 2P", "Courier New", monospace';
+    ctx.font = 'bold 15px "Press Start 2P", monospace';
 
-    // Neon glow pulse calculation
     const pulse = 0.75 + 0.25 * Math.sin(this.frameTick * 0.08);
 
-    // Diffuse glow
     ctx.shadowColor = '#00f3ff';
     ctx.shadowBlur = 18 * pulse;
 
-    // Glowing outline
     ctx.fillStyle = `rgba(0, 243, 255, ${0.4 * pulse})`;
     ctx.fillText(text, x, y);
 
-    // Bright inner core
     ctx.fillStyle = '#ffffff';
     ctx.fillText(text, x, y);
 
-    // Neon mount bracket
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(x - 95, y + 4, 190, 2);
@@ -511,7 +597,7 @@ class PixelStudioEngine {
   renderCheckeredFloor(ctx) {
     const startY = 154;
     const tileW = 40;
-    const tileH = 24; // Isometric squish ratio
+    const tileH = 24;
 
     const cols = Math.ceil(this.width / tileW) + 1;
     const rows = Math.ceil((this.height - startY) / tileH) + 1;
@@ -522,16 +608,13 @@ class PixelStudioEngine {
         const y = startY + r * tileH;
         const isEven = (r + c) % 2 === 0;
 
-        // Alternating retro checkered slate tiles
         ctx.fillStyle = isEven ? '#181e2e' : '#1e2638';
         ctx.fillRect(x, y, tileW, tileH);
 
-        // Tile bevel borders
         ctx.strokeStyle = '#141824';
         ctx.lineWidth = 1;
         ctx.strokeRect(x, y, tileW, tileH);
 
-        // Subtle highlight on top edge of even tiles
         if (isEven) {
           ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
           ctx.fillRect(x, y, tileW, 1);
@@ -539,12 +622,11 @@ class PixelStudioEngine {
       }
     }
 
-    // Floor area demarcation lines for departments
     ctx.strokeStyle = 'rgba(0, 243, 255, 0.15)';
     ctx.setLineDash([4, 4]);
-    ctx.strokeRect(30, 180, 420, 330); // Left wing: UX & FE
+    ctx.strokeRect(30, 180, 420, 330);
     ctx.strokeStyle = 'rgba(168, 85, 247, 0.15)';
-    ctx.strokeRect(510, 180, 420, 330); // Right wing: BE & SEC
+    ctx.strokeRect(510, 180, 420, 330);
     ctx.setLineDash([]);
   }
 
@@ -554,13 +636,11 @@ class PixelStudioEngine {
     const wbW = 105;
     const wbH = 68;
 
-    // Frame
     ctx.fillStyle = '#334155';
     ctx.fillRect(wbX, wbY, wbW, wbH);
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(wbX + 3, wbY + 3, wbW - 6, wbH - 6);
 
-    // Title & Columns
     ctx.fillStyle = '#0f172a';
     ctx.font = '6px monospace';
     ctx.fillText('SPRINT BACKLOG', wbX + 8, wbY + 12);
@@ -574,13 +654,12 @@ class PixelStudioEngine {
     ctx.lineTo(wbX + 72, wbY + wbH - 4);
     ctx.stroke();
 
-    // Sticky Notes
     const stickies = [
-      { x: wbX + 8, y: wbY + 20, c: '#fef08a' }, // Yellow TODO
-      { x: wbX + 20, y: wbY + 32, c: '#fbcfe8' }, // Pink
-      { x: wbX + 42, y: wbY + 22, c: '#bae6fd' }, // Cyan DOING
-      { x: wbX + 54, y: wbY + 38, c: '#fed7aa' }, // Amber
-      { x: wbX + 76, y: wbY + 24, c: '#bbf7d0' }, // Green DONE
+      { x: wbX + 8, y: wbY + 20, c: '#fef08a' },
+      { x: wbX + 20, y: wbY + 32, c: '#fbcfe8' },
+      { x: wbX + 42, y: wbY + 22, c: '#bae6fd' },
+      { x: wbX + 54, y: wbY + 38, c: '#fed7aa' },
+      { x: wbX + 76, y: wbY + 24, c: '#bbf7d0' },
       { x: wbX + 88, y: wbY + 40, c: '#bbf7d0' }
     ];
     stickies.forEach(s => {
@@ -591,7 +670,6 @@ class PixelStudioEngine {
       ctx.fillRect(s.x + 2, s.y + 6, 4, 1);
     });
 
-    // Marker tray at bottom
     ctx.fillStyle = '#64748b';
     ctx.fillRect(wbX + 10, wbY + wbH, wbW - 20, 3);
   }
@@ -602,14 +680,12 @@ class PixelStudioEngine {
     const rackW = 120;
     const rackH = 104;
 
-    // Dark chassis
     ctx.fillStyle = '#090d16';
     ctx.fillRect(rackX, rackY, rackW, rackH);
     ctx.strokeStyle = '#334155';
     ctx.lineWidth = 2;
     ctx.strokeRect(rackX, rackY, rackW, rackH);
 
-    // 3 Server Units
     for (let u = 0; u < 3; u++) {
       const uX = rackX + 6 + u * 38;
       const uY = rackY + 6;
@@ -621,13 +697,11 @@ class PixelStudioEngine {
       ctx.strokeStyle = '#1e293b';
       ctx.strokeRect(uX, uY, uW, uH);
 
-      // Ventilation horizontal slits
       ctx.fillStyle = '#0a0f1d';
       for (let s = 0; s < 12; s++) {
         ctx.fillRect(uX + 4, uY + 20 + s * 5, uW - 8, 2);
       }
 
-      // Blinking LEDs
       const ledColors = ['#10b981', '#00f3ff', '#f59e0b', '#ef4444'];
       for (let l = 0; l < 4; l++) {
         const isBlinking = ((this.frameTick + u * 15 + l * 23) % 40) < 22;
@@ -636,7 +710,6 @@ class PixelStudioEngine {
       }
     }
 
-    // Overhead Cable Loom running toward BE desk
     ctx.strokeStyle = '#7e22ce';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -656,29 +729,25 @@ class PixelStudioEngine {
     const cX = 420;
     const cY = 120;
 
-    // Counter table
     ctx.fillStyle = '#3e2723';
     ctx.fillRect(cX, cY + 16, 50, 20);
     ctx.fillStyle = '#5d4037';
     ctx.fillRect(cX - 2, cY + 14, 54, 4);
 
-    // Espresso Machine
     ctx.fillStyle = '#475569';
     ctx.fillRect(cX + 12, cY, 26, 16);
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(cX + 16, cY + 4, 18, 8);
 
-    // Coffee pot & nozzle
     ctx.fillStyle = '#94a3b8';
     ctx.fillRect(cX + 22, cY + 11, 6, 4);
     ctx.fillStyle = '#38bdf8';
-    ctx.fillRect(cX + 23, cY + 15, 4, 1); // Water indicator
+    ctx.fillRect(cX + 23, cY + 15, 4, 1);
 
-    // Mug
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(cX + 32, cY + 11, 6, 6);
     ctx.fillStyle = '#3e2723';
-    ctx.fillRect(cX + 33, cY + 12, 4, 2); // Coffee liquid
+    ctx.fillRect(cX + 33, cY + 12, 4, 2);
   }
 
   renderCoffeeSteam(ctx) {
@@ -688,17 +757,27 @@ class PixelStudioEngine {
     });
   }
 
+  renderWaypoints(ctx) {
+    this.waypoints.forEach(wp => {
+      ctx.save();
+      ctx.strokeStyle = wp.color || '#00f3ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(wp.x, wp.y, wp.radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(0, 243, 255, 0.2)';
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
   renderPixelPlants(ctx) {
-    // Left corner plant
     this.drawPlant(ctx, 30, 150);
-    // Right mid plant
     this.drawPlant(ctx, 650, 150);
-    // Bottom edge accent plant
     this.drawPlant(ctx, 470, 480);
   }
 
   drawPlant(ctx, x, y) {
-    // Pot
     ctx.fillStyle = '#b45309';
     ctx.fillRect(x + 4, y + 16, 16, 14);
     ctx.fillStyle = '#d97706';
@@ -706,7 +785,6 @@ class PixelStudioEngine {
     ctx.fillStyle = '#451a03';
     ctx.fillRect(x + 5, y + 15, 14, 2);
 
-    // Leaves
     ctx.fillStyle = '#15803d';
     ctx.fillRect(x + 2, y + 4, 8, 8);
     ctx.fillRect(x + 14, y + 2, 8, 9);
@@ -718,67 +796,46 @@ class PixelStudioEngine {
     ctx.fillRect(x + 10, y, 4, 4);
   }
 
-  // ==========================================
-  // 4 SPECIALIZED WORKSTATIONS
-  // ==========================================
   renderWorkstations(ctx) {
-    // 1. UI/UX Workstation (Top-Left)
     this.drawUIUXStation(ctx, this.stations.uiux.x - 30, this.stations.uiux.y - 30);
-
-    // 2. FE Workstation (Bottom-Left)
     this.drawFEStation(ctx, this.stations.fe.x - 30, this.stations.fe.y - 30);
-
-    // 3. BE Workstation (Top-Right)
     this.drawBEStation(ctx, this.stations.be.x - 40, this.stations.be.y - 30);
-
-    // 4. SEC Workstation (Bottom-Right)
     this.drawSECStation(ctx, this.stations.sec.x - 40, this.stations.sec.y - 30);
   }
 
-  // UI/UX Station: Drawing tablet, wireframes, color swatches
   drawUIUXStation(ctx, x, y) {
-    // Desk Surface
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(x, y + 20, 110, 42);
     ctx.fillStyle = '#334155';
     ctx.fillRect(x, y + 18, 110, 4);
-    // Cyan LED edge line
     ctx.fillStyle = '#00f3ff';
     ctx.fillRect(x, y + 22, 110, 2);
 
-    // Desk legs
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(x + 6, y + 62, 6, 26);
     ctx.fillRect(x + 98, y + 62, 6, 26);
 
-    // Drawing Tablet with Stylus
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(x + 14, y + 28, 30, 20);
-    // Glowing tablet canvas
     ctx.fillStyle = '#00f3ff';
     ctx.fillRect(x + 17, y + 31, 24, 14);
-    // Wireframe boxes on tablet
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(x + 19, y + 33, 9, 4);
     ctx.fillRect(x + 19, y + 39, 14, 3);
 
-    // Large Wireframe Monitor
     ctx.fillStyle = '#090d16';
     ctx.fillRect(x + 52, y - 8, 48, 30);
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(x + 55, y - 5, 42, 24);
-    // Screen contents: UI wireframe layout
     ctx.fillStyle = '#38bdf8';
-    ctx.fillRect(x + 58, y - 2, 36, 4); // Nav bar
+    ctx.fillRect(x + 58, y - 2, 36, 4);
     ctx.fillStyle = '#64748b';
-    ctx.fillRect(x + 58, y + 5, 16, 11); // Hero box
-    ctx.fillRect(x + 77, y + 5, 17, 11); // Sidebar
+    ctx.fillRect(x + 58, y + 5, 16, 11);
+    ctx.fillRect(x + 77, y + 5, 17, 11);
 
-    // Monitor stand
     ctx.fillStyle = '#475569';
     ctx.fillRect(x + 72, y + 22, 8, 4);
 
-    // Color Swatches on desk
     const swatches = ['#00f3ff', '#3b82f6', '#a855f7', '#ef4444'];
     swatches.forEach((c, i) => {
       ctx.fillStyle = c;
@@ -786,82 +843,68 @@ class PixelStudioEngine {
     });
   }
 
-  // FE Station: Dual-monitors (Code & Live UI), RGB keyboard
   drawFEStation(ctx, x, y) {
-    // Desk
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(x, y + 20, 115, 42);
     ctx.fillStyle = '#334155';
     ctx.fillRect(x, y + 18, 115, 4);
     ctx.fillStyle = '#3b82f6';
-    ctx.fillRect(x, y + 22, 115, 2); // Blue LED trim
+    ctx.fillRect(x, y + 22, 115, 2);
 
-    // Legs
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(x + 6, y + 62, 6, 26);
     ctx.fillRect(x + 103, y + 62, 6, 26);
 
-    // Left Monitor: Code IDE
     ctx.fillStyle = '#090d16';
     ctx.fillRect(x + 12, y - 10, 42, 28);
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(x + 14, y - 8, 38, 24);
-    // Fake syntax highlighted code lines
     const codeColors = ['#f43f5e', '#38bdf8', '#4ade80', '#fbbf24', '#c084fc'];
     for (let l = 0; l < 5; l++) {
       ctx.fillStyle = codeColors[(l + Math.floor(this.frameTick / 20)) % codeColors.length];
       ctx.fillRect(x + 17, y - 5 + l * 4, 18 + (l % 3) * 6, 2);
     }
 
-    // Right Monitor: Live Browser Preview
     ctx.fillStyle = '#090d16';
     ctx.fillRect(x + 58, y - 10, 42, 28);
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(x + 60, y - 8, 38, 24);
-    // Web page mockup
     ctx.fillStyle = '#3b82f6';
     ctx.fillRect(x + 62, y - 5, 34, 5);
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(x + 64, y + 3, 12, 6);
     ctx.fillStyle = '#10b981';
-    ctx.fillRect(x + 80, y + 4, 12, 4); // CTA Button
+    ctx.fillRect(x + 80, y + 4, 12, 4);
 
-    // RGB Mechanical Keyboard
     const rgbHue = (this.frameTick * 2) % 360;
     ctx.fillStyle = `hsl(${rgbHue}, 80%, 60%)`;
     ctx.fillRect(x + 36, y + 30, 36, 12);
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(x + 38, y + 32, 32, 8);
 
-    // Mouse & Pad
     ctx.fillStyle = '#334155';
     ctx.fillRect(x + 78, y + 32, 14, 10);
     ctx.fillStyle = '#3b82f6';
     ctx.fillRect(x + 83, y + 34, 4, 6);
   }
 
-  // BE Station: Server console, Database schema charts, Purple glow
   drawBEStation(ctx, x, y) {
-    // Desk
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(x, y + 20, 115, 42);
     ctx.fillStyle = '#334155';
     ctx.fillRect(x, y + 18, 115, 4);
     ctx.fillStyle = '#a855f7';
-    ctx.fillRect(x, y + 22, 115, 2); // Purple LED trim
+    ctx.fillRect(x, y + 22, 115, 2);
 
-    // Legs
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(x + 6, y + 62, 6, 26);
     ctx.fillRect(x + 103, y + 62, 6, 26);
 
-    // Main Monitor: Database Entity Relationships (ERD)
     ctx.fillStyle = '#090d16';
     ctx.fillRect(x + 20, y - 10, 50, 30);
     ctx.fillStyle = '#1e1b4b';
     ctx.fillRect(x + 22, y - 8, 46, 26);
 
-    // SQL tables schema boxes
     ctx.fillStyle = '#a855f7';
     ctx.fillRect(x + 26, y - 4, 16, 10);
     ctx.fillStyle = '#38bdf8';
@@ -873,40 +916,33 @@ class PixelStudioEngine {
     ctx.lineTo(x + 48, y + 6);
     ctx.stroke();
 
-    // Secondary Terminal: REST API streaming logs
     ctx.fillStyle = '#090d16';
     ctx.fillRect(x + 74, y - 6, 32, 24);
     ctx.fillStyle = '#052e16';
     ctx.fillRect(x + 76, y - 4, 28, 20);
-    // Green text log lines
     ctx.fillStyle = '#4ade80';
     for (let l = 0; l < 4; l++) {
       ctx.fillRect(x + 78, y - 2 + l * 4, 18 + (l % 2) * 5, 2);
     }
 
-    // Terminal keyboard & Auth Token Keycard
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(x + 30, y + 30, 36, 10);
     ctx.fillStyle = '#c084fc';
-    ctx.fillRect(x + 76, y + 32, 10, 6); // Keycard
+    ctx.fillRect(x + 76, y + 32, 10, 6);
   }
 
-  // SEC Station: Rotating radar sweep, Matrix green terminal, Red/Gold tactical
   drawSECStation(ctx, x, y) {
-    // Desk
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(x, y + 20, 115, 42);
     ctx.fillStyle = '#334155';
     ctx.fillRect(x, y + 18, 115, 4);
     ctx.fillStyle = '#ef4444';
-    ctx.fillRect(x, y + 22, 115, 2); // Crimson LED trim
+    ctx.fillRect(x, y + 22, 115, 2);
 
-    // Legs
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(x + 6, y + 62, 6, 26);
     ctx.fillRect(x + 103, y + 62, 6, 26);
 
-    // Left Display: Circular Rotating Radar Sweep
     const radarCX = x + 34;
     const radarCY = y + 2;
     const radarR = 14;
@@ -919,12 +955,10 @@ class PixelStudioEngine {
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Radar concentric rings
     ctx.beginPath();
     ctx.arc(radarCX, radarCY, radarR * 0.5, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Radar sweeping beam
     const radarAngle = (this.frameTick * 0.06) % (Math.PI * 2);
     ctx.strokeStyle = '#34d399';
     ctx.lineWidth = 2;
@@ -933,24 +967,20 @@ class PixelStudioEngine {
     ctx.lineTo(radarCX + Math.cos(radarAngle) * radarR, radarCY + Math.sin(radarAngle) * radarR);
     ctx.stroke();
 
-    // Blip detected on radar
     ctx.fillStyle = '#ef4444';
     ctx.fillRect(radarCX + 6, radarCY - 5, 2, 2);
 
-    // Right Display: Matrix Hacker Terminal
     ctx.fillStyle = '#090d16';
     ctx.fillRect(x + 58, y - 10, 48, 28);
     ctx.fillStyle = '#000000';
     ctx.fillRect(x + 60, y - 8, 44, 24);
 
-    // Matrix falling code effect
     ctx.fillStyle = '#22c55e';
     for (let c = 0; c < 6; c++) {
       const dropY = ((this.frameTick * 2 + c * 7) % 20);
       ctx.fillRect(x + 63 + c * 7, y - 6 + dropY, 3, 2);
     }
 
-    // Hologram Floating Shield / CTF Lock
     const shieldBob = Math.sin(this.frameTick * 0.1) * 3;
     ctx.save();
     ctx.fillStyle = 'rgba(245, 158, 11, 0.75)';
@@ -958,18 +988,16 @@ class PixelStudioEngine {
     ctx.arc(x + 88, y + 32 + shieldBob, 6, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(x + 86, y + 30 + shieldBob, 4, 4); // Lock shackle
+    ctx.fillRect(x + 86, y + 30 + shieldBob, 4, 4);
     ctx.restore();
   }
 
   renderVignette(ctx) {
-    // Subtle retro CRT scanline every 4px
     ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
     for (let y = 0; y < this.height; y += 4) {
       ctx.fillRect(0, y, this.width, 1);
     }
 
-    // Vignette border
     const vGrad = ctx.createRadialGradient(
       this.width / 2, this.height / 2, this.height * 0.45,
       this.width / 2, this.height / 2, this.width * 0.65

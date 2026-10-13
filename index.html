@@ -16,7 +16,7 @@
       <div class="brand-logo-pixel">MC</div>
       <div>
         <h1 class="brand-title">MOONCRUST // <span>PIXEL AI STUDIO</span></h1>
-        <div class="brand-subtitle">MISSION CONTROL DASHBOARD & AUTONOMOUS 4-AGENT TECH LAB</div>
+        <div class="brand-subtitle">MISSION CONTROL DASHBOARD & 4 AUTONOMOUS SPECIALIST SUB-AGENTS</div>
       </div>
     </div>
 
@@ -29,7 +29,7 @@
         🔊 AUDIO: ON
       </button>
       <button class="btn-header" onclick="resetStudioPositions()">
-        🔄 RESET AGENTS
+        🔄 RESET POSISI
       </button>
     </div>
   </header>
@@ -37,11 +37,24 @@
   <!-- Main Content Layout -->
   <main class="main-wrapper">
 
-    <!-- 1. 2D Pixel Art Studio Room (HTML5 Canvas) -->
+    <!-- 1. Panduan Cepat (Cara Menyuruh Agen Kerja) -->
+    <section class="guide-card">
+      <div class="guide-title">
+        <span>💡</span> PANDUAN PENGGUNAAN: CARA MENYURUH AGEN BEKERJA
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:10px; line-height:1.5;">
+        <div><strong>1. Mode Berantai (Auto-Pipeline):</strong> Ketik topik tugas apa pun di kotak input bawah (atau klik Preset), lalu klik <code>🚀 LAUNCH AUTO-PIPELINE</code>. Keempat agen akan bekerja berurutan.</div>
+        <div><strong>2. Suruh Agen Tertentu (Solo):</strong> Ingin hanya UI/UX atau Security saja? Klik tombol <code>Suruh [Nama-Bot]</code> di bawah kotak input.</div>
+        <div><strong>3. Gerakkan Manual di Ruangan:</strong> Klik agen di kanvas lalu klik lantai mana pun untuk menyuruhnya berjalan ke titik tersebut (*Click-to-Move*).</div>
+        <div><strong>4. Perintah Cepat di Inspector:</strong> Klik agen lalu gunakan tombol aksi <code>Ambil Kopi</code>, <code>Papan Tulis</code>, atau <code>Cek Server</code>.</div>
+      </div>
+    </section>
+
+    <!-- 2. 2D Pixel Art Studio Room (HTML5 Canvas) -->
     <section class="studio-canvas-card">
       <div class="canvas-toolbar">
-        <div>📍 SIMULATION: 2D PIXEL ISOMETRIC TECH HUB (960x540)</div>
-        <div>STATION LIGHTS: <span style="color:#00f3ff">● CYAN</span> <span style="color:#3b82f6">● BLUE</span> <span style="color:#a855f7">● PURPLE</span> <span style="color:#ef4444">● RED</span></div>
+        <div>📍 SIMULASI 2D PIXEL ISOMETRIK (960x540) — KLIK LANTAI UNTUK GERAKKAN AGEN</div>
+        <div>STASIUN: <span style="color:#00f3ff">● CYAN</span> <span style="color:#3b82f6">● BLUE</span> <span style="color:#a855f7">● PURPLE</span> <span style="color:#ef4444">● RED</span></div>
       </div>
 
       <div class="canvas-viewport">
@@ -50,8 +63,8 @@
 
       <!-- Agent Selection Quick Bar -->
       <div class="agent-chips-bar">
-        <span style="font-family: var(--font-pixel); font-size: 8px; color: var(--text-muted); margin-right: 4px;">SPECIALISTS:</span>
-        <div class="agent-chip" data-bot="uiux" onclick="window.pixelStudio.selectAgent('uiux')">
+        <span style="font-family: var(--font-pixel); font-size: 8px; color: var(--text-muted); margin-right: 4px;">PILIH AGEN:</span>
+        <div class="agent-chip active" data-bot="uiux" onclick="window.pixelStudio.selectAgent('uiux')">
           <span class="chip-dot" style="background:#00f3ff"></span>
           <span>[UI/UX-Bot] Drawing Tablet</span>
         </div>
@@ -71,21 +84,35 @@
 
       <!-- Live Running Ticker -->
       <div class="ticker-bar">
-        <span class="ticker-icon">▶ RUNNING:</span>
+        <span class="ticker-icon">▶ STATUS:</span>
         <div id="liveStatusTicker" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-          Studio room active. Agents walking between workstations, checking server rack & whiteboard.
+          Studio room aktif. Klik agen untuk mengontrol atau pilih tugas untuk mulai bekerja.
+        </div>
+      </div>
+
+      <!-- Terminal Real-Time Activity Log -->
+      <div class="terminal-log-panel">
+        <div class="terminal-log-header">
+          <span>📟 MISSION CONTROL REAL-TIME LOG</span>
+          <button onclick="document.getElementById('terminalLogBody').innerHTML = '';" class="btn-pixel-small" style="padding:2px 6px;">BERSIHKAN LOG</button>
+        </div>
+        <div id="terminalLogBody" class="terminal-log-body">
+          <div class="terminal-log-row">
+            <span class="log-time">[BOOT]</span>
+            <span class="log-content">Mooncrust Pixel Studio Kernel v2.5.0 online. 4 sub-agents siaga di stasiun masing-masing.</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 2. Mission Control Deck & Auto-Pipeline Launcher -->
+    <!-- 3. Mission Control Deck & Auto-Pipeline Launcher -->
     <section class="control-deck">
       <div class="deck-title-row">
         <div class="deck-title">
-          <span>⚡</span> AUTONOMOUS AUTO-PIPELINE CONTROLLER
+          <span>⚡</span> PUSAT KOMANDO TUGAS AI AGENT
         </div>
         <div id="pipelineBadge" class="pipeline-badge">
-          IDLE / READY TO LAUNCH
+          IDLE / SIAP MENERIMA PERINTAH
         </div>
       </div>
 
@@ -95,8 +122,8 @@
           type="text" 
           id="taskTopicInput" 
           class="task-input-field" 
-          placeholder="Enter task topic (e.g., E-Commerce Checkout System, CTF Challenge, Student Academic Portal)..."
-          value="E-Commerce Secure Checkout System (OWASP Hardened)"
+          placeholder="Ketik topik tugas apa saja (contoh: Reservasi Futsal Online, Portal Akademik Kampus, Toko E-Commerce)..."
+          value="Aplikasi Reservasi & Booking Lapangan Futsal Realtime dengan QRIS"
         >
         <button id="launchPipelineBtn" class="btn-launch" onclick="launchTaskPipeline()">
           <span>🚀</span> LAUNCH AUTO-PIPELINE
@@ -105,12 +132,15 @@
 
       <!-- Quick Preset Buttons -->
       <div class="presets-group">
-        <span class="presets-label">QUICK PRESETS:</span>
-        <button class="preset-chip" onclick="applyPreset('ecommerce')">
-          🛒 E-Commerce Checkout
+        <span class="presets-label">PILIHAN PRESET:</span>
+        <button class="preset-chip" onclick="applyPreset('futsal')">
+          ⚽ Booking Lapangan Futsal
         </button>
         <button class="preset-chip" onclick="applyPreset('campus')">
-          🎓 Kampus Academic Portal
+          🎓 Portal Akademik Kampus
+        </button>
+        <button class="preset-chip" onclick="applyPreset('ecommerce')">
+          🛒 E-Commerce Checkout
         </button>
         <button class="preset-chip" onclick="applyPreset('ctf')">
           🚩 CTF Crypto & SQLi Lab
@@ -118,6 +148,15 @@
         <button class="preset-chip" onclick="applyPreset('iot')">
           📡 Real-Time IoT Stream
         </button>
+      </div>
+
+      <!-- Solo Agent Direct Dispatch -->
+      <div class="solo-dispatch-group">
+        <span class="presets-label">SURUH AGEN SOLO:</span>
+        <button class="btn-solo" onclick="launchSoloAgent('uiux')">🎨 Suruh UI/UX-Bot</button>
+        <button class="btn-solo" onclick="launchSoloAgent('fe')">💻 Suruh FE-Bot</button>
+        <button class="btn-solo" onclick="launchSoloAgent('be')">🗄️ Suruh BE-Bot</button>
+        <button class="btn-solo" onclick="launchSoloAgent('sec')">🛡️ Suruh SEC-Bot</button>
       </div>
 
       <!-- Stage Stepper Visualizer -->
@@ -151,27 +190,47 @@
       </div>
     </section>
 
-    <!-- 3. Inspector Card (Current Selected Agent) -->
+    <!-- 4. Inspector Card & Direct Action Buttons -->
     <section id="inspectorSection" class="inspector-card">
       <div class="inspector-header">
         <div style="display:flex; align-items:center; gap:10px;">
           <span id="inspectBadge" style="width:12px; height:12px; background:#00f3ff; border-radius:2px; display:inline-block;"></span>
           <span id="inspectName" class="inspector-agent-name">UI/UX-Bot (Lead UI/UX Architect)</span>
         </div>
-        <span id="inspectStatus" class="status-mitigated">ACTIVE & MONITORED</span>
+        <span id="inspectStatus" class="status-mitigated">AKTIF & SIAGA</span>
       </div>
       <div id="inspectDesc" class="inspector-meta">
-        Specialist in User Flows, Wireframes, Design Tokens & Heuristic Usability. Equipped with Cyan Visor & Digital Stylus.
+        Spesialis User Flow, Wireframe Halaman, Design System Tokens, dan Analisis 10 Heuristik Usability Nielsen.
       </div>
       <div style="display:flex; gap:15px; flex-wrap:wrap; font-size:12px; color:var(--text-muted); border-top:1px solid #1e293b; padding-top:8px;">
-        <div>Tasks Finished: <strong id="inspectTasks" style="color:#fff">42</strong></div>
-        <div>Efficiency: <strong id="inspectEff" style="color:#34d399">99.4%</strong></div>
-        <div>Current Station: <strong id="inspectStation" style="color:#38bdf8">Drawing Tablet Station</strong></div>
-        <div>Last Thought: <em id="inspectThought" style="color:#fde047">"Drafting mobile wireframe layout..."</em></div>
+        <div>Tugas Selesai: <strong id="inspectTasks" style="color:#fff">42</strong></div>
+        <div>Efisiensi: <strong id="inspectEff" style="color:#34d399">99.4%</strong></div>
+        <div>Stasiun Kerja: <strong id="inspectStation" style="color:#38bdf8">Meja Drawing Tablet</strong></div>
+        <div>Pemikiran Terakhir: <em id="inspectThought" style="color:#fde047">"Merapikan susunan wireframe responsif..."</em></div>
+      </div>
+
+      <!-- Action Buttons to Control Selected Agent -->
+      <div class="inspector-actions-row">
+        <span style="font-family:var(--font-pixel); font-size:8px; color:var(--text-muted);">PERINTAH KONTROL:</span>
+        <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('work')">
+          💻 Mulai Bekerja
+        </button>
+        <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('coffee')">
+          ☕ Ambil Kopi
+        </button>
+        <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('whiteboard')">
+          📋 Papan Tulis
+        </button>
+        <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('server')">
+          🖥️ Cek Server
+        </button>
+        <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('chat')">
+          💬 Tanya Status
+        </button>
       </div>
     </section>
 
-    <!-- 4. Deliverables Output Panel with Tabs -->
+    <!-- 5. Deliverables Output Panel with Tabs -->
     <section class="deliverable-card">
       <div class="tabs-header">
         <button class="tab-btn active" onclick="switchTab('uiux')">
@@ -198,7 +257,7 @@
           <span class="deliverable-time">Standby</span>
         </div>
         <h3 class="deliverable-title text-cyan">🎨 UI/UX Architecture & Design System Specification</h3>
-        <p class="text-muted">Launch the pipeline above to see UI/UX-Bot draft custom user journeys, tokens, and wireframes for your topic.</p>
+        <p class="text-muted">Jalankan pipeline di atas untuk melihat UI/UX-Bot merancang wireframe, user flow, dan design system tokens.</p>
       </div>
 
       <!-- Tab 2: Frontend -->
@@ -208,7 +267,7 @@
           <span class="deliverable-time">Standby</span>
         </div>
         <h3 class="deliverable-title text-blue">💻 Responsive Frontend Component & Interactive Code</h3>
-        <p class="text-muted">Launch the pipeline to see FE-Bot generate full semantic HTML5 and CSS/Tailwind component code with a live preview.</p>
+        <p class="text-muted">FE-Bot akan menyusun kode komponen HTML5/Tailwind yang siap dicopy dan preview langsung.</p>
       </div>
 
       <!-- Tab 3: Backend -->
@@ -218,7 +277,7 @@
           <span class="deliverable-time">Standby</span>
         </div>
         <h3 class="deliverable-title text-purple">🗄️ Relational SQL Schema & RESTful API Architecture</h3>
-        <p class="text-muted">Launch the pipeline to see BE-Bot generate PostgreSQL DDL tables, indexes, and Express.js REST controllers.</p>
+        <p class="text-muted">BE-Bot akan merancang skema SQL DDL, indexing, serta kontroler REST API Express.js.</p>
       </div>
 
       <!-- Tab 4: Security -->
@@ -228,7 +287,7 @@
           <span class="deliverable-time">Standby</span>
         </div>
         <h3 class="deliverable-title text-red">🛡️ Cyber Security Penetration Audit & CTF Challenge Lab</h3>
-        <p class="text-muted">Launch the pipeline to see SEC-Bot run an OWASP Top 10 pentest, simulate CTF crypto solvers, and produce security hardening diffs.</p>
+        <p class="text-muted">SEC-Bot akan memindai celah OWASP Top 10, membuat tantangan CTF dan flag, serta patch hardening.</p>
       </div>
 
       <!-- Tab 5: Summary -->
@@ -238,7 +297,7 @@
           <span class="deliverable-time">Ready</span>
         </div>
         <h3 class="deliverable-title text-green">🚀 Full Project Deliverables Overview</h3>
-        <p class="text-muted">Once all stages finish, the combined project artifact will be compiled here.</p>
+        <p class="text-muted">Hasil akhir komprehensif dari seluruh sub-agent dapat diunduh di sini.</p>
       </div>
     </section>
 
@@ -247,7 +306,7 @@
   <!-- Footer -->
   <footer class="studio-footer">
     <div>
-      <strong>MOONCRUST // PIXEL AI STUDIO</strong> &copy; 2026. Built with HTML5 Canvas, Web Audio API & Autonomous Agentic Pipelines.
+      <strong>MOONCRUST // PIXEL AI STUDIO</strong> &copy; 2026. Built with HTML5 Canvas, Web Audio API & Autonomous Multi-Agent Pipelines.
     </div>
     <div>
       Status: <span style="color:#10b981">Operational</span> | Engine: <span style="color:#00f3ff">Mooncrust 2D Pixel Kernel</span>
@@ -261,7 +320,6 @@
   <script src="js/pipeline.js"></script>
 
   <script>
-    // Audio toggle handler
     function toggleAudio() {
       if (window.studioAudio) {
         const isMuted = window.studioAudio.toggleMute();
@@ -273,7 +331,6 @@
       }
     }
 
-    // Reset agent positions to their home workstations
     function resetStudioPositions() {
       if (window.pixelStudio) {
         const studio = window.pixelStudio;
@@ -285,10 +342,10 @@
         });
         if (window.studioAudio) window.studioAudio.playKey();
         studio.showStationInfo('whiteboard');
+        studio.logTerminal('[System] Posisi seluruh agen dikembalikan ke stasiun masing-masing.');
       }
     }
 
-    // Apply quick preset to input field
     function applyPreset(presetKey) {
       if (window.pipelineEngine && window.pipelineEngine.presets[presetKey]) {
         const input = document.getElementById('taskTopicInput');
@@ -300,21 +357,27 @@
       }
     }
 
-    // Launch pipeline execution
     function launchTaskPipeline() {
       const input = document.getElementById('taskTopicInput');
-      const topic = input ? input.value : 'E-Commerce Secure Checkout System';
+      const topic = input ? input.value : 'Aplikasi Reservasi & Booking Lapangan Futsal Realtime dengan QRIS';
       if (window.pipelineEngine) {
         window.pipelineEngine.runPipeline(topic);
       }
     }
 
-    // Tab switching logic
+    function launchSoloAgent(agentId) {
+      const input = document.getElementById('taskTopicInput');
+      const topic = input ? input.value : 'Modul Spesialis';
+      if (window.pipelineEngine) {
+        window.pipelineEngine.runSingleAgent(agentId, topic);
+      }
+    }
+
     function switchTab(tabKey) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
 
-      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabKey));
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabKey));
       if (activeBtn) activeBtn.classList.add('active');
 
       const targetPanel = document.getElementById(`tabContent-${tabKey}`);
@@ -323,7 +386,6 @@
       if (window.studioAudio) window.studioAudio.playKey();
     }
 
-    // Update Inspector UI Card when an agent is selected
     window.updateInspectorCard = function(agent) {
       const palette = window.pixelSprites.getPalette(agent.id);
       document.getElementById('inspectBadge').style.background = palette.primary;
@@ -332,24 +394,23 @@
       document.getElementById('inspectTasks').textContent = agent.stats.tasksCompleted;
       document.getElementById('inspectEff').textContent = agent.stats.efficiency;
       document.getElementById('inspectStation').textContent = window.pixelStudio.stations[agent.stationId].name;
-      document.getElementById('inspectThought').textContent = `"${agent.bubble ? agent.bubble.text : 'Processing next task cycle...'}"`;
+      document.getElementById('inspectThought').textContent = `"${agent.bubble ? agent.bubble.text : 'Memproses siklus instruksi selanjutnya...'}"`;
 
-      // Highlight corresponding chip
       document.querySelectorAll('.agent-chip').forEach(chip => {
         chip.classList.toggle('active', chip.dataset.bot === agent.id);
       });
     };
 
-    // Auto-pre-generate default deliverable view so page is informative immediately on load
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         if (window.pipelineEngine) {
-          const defaultTopic = 'E-Commerce Secure Checkout System (OWASP Hardened)';
+          const defaultTopic = 'Aplikasi Reservasi & Booking Lapangan Futsal Realtime dengan QRIS';
+          const domain = window.pipelineEngine.analyzeDomain(defaultTopic);
           window.pipelineEngine.currentTaskTopic = defaultTopic;
-          window.pipelineEngine.deliverables.uiux = window.pipelineEngine.generateUIUXDeliverable(defaultTopic);
-          window.pipelineEngine.deliverables.fe = window.pipelineEngine.generateFEDeliverable(defaultTopic);
-          window.pipelineEngine.deliverables.be = window.pipelineEngine.generateBEDeliverable(defaultTopic);
-          window.pipelineEngine.deliverables.sec = window.pipelineEngine.generateSECDeliverable(defaultTopic);
+          window.pipelineEngine.deliverables.uiux = window.pipelineEngine.generateUIUXDeliverable(defaultTopic, domain);
+          window.pipelineEngine.deliverables.fe = window.pipelineEngine.generateFEDeliverable(defaultTopic, domain);
+          window.pipelineEngine.deliverables.be = window.pipelineEngine.generateBEDeliverable(defaultTopic, domain);
+          window.pipelineEngine.deliverables.sec = window.pipelineEngine.generateSECDeliverable(defaultTopic, domain);
           window.pipelineEngine.renderDeliverableTab('uiux');
           window.pipelineEngine.renderDeliverableTab('fe');
           window.pipelineEngine.renderDeliverableTab('be');

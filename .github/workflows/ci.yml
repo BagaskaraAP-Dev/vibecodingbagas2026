@@ -1,0 +1,44 @@
+name: CI & Integrity Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚀 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔍 Syntax & Integrity Validation
+        run: |
+          echo "Validating Server & Client scripts..."
+          node -c server.js
+          node -c public/js/audio.js
+          node -c public/js/sprites.js
+          node -c public/js/studio.js
+          node -c public/js/pipeline.js
+          echo "All scripts verified successfully."
+
+      - name: 🧪 Test Health Endpoint Boot
+        run: |
+          npm start &
+          PID=$!
+          sleep 3
+          curl --fail http://localhost:3000/api/health || exit 1
+          kill $PID
+          echo "Server health check PASSED!"
