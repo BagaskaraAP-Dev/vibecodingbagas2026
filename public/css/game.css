@@ -1,0 +1,232 @@
+/* ========================================================
+   3D GAME VIEWPORT, HUD & CONTROLS STYLES
+   ======================================================== */
+
+.game-arena-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  border: 3px solid var(--border-neon);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+  background: #000;
+}
+
+#game-canvas-container {
+  width: 100%;
+  height: 520px;
+  position: relative;
+  display: block;
+  cursor: grab;
+}
+
+#game-canvas-container:active {
+  cursor: grabbing;
+}
+
+/* In-Game HUD Overlay */
+.game-hud {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-cluster {
+  display: flex;
+  gap: 0.75rem;
+  pointer-events: auto;
+}
+
+.hud-badge {
+  background: rgba(7, 11, 20, 0.85);
+  border: 1px solid var(--border-neon);
+  backdrop-filter: blur(8px);
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hud-score-val { color: var(--neon-cyan); }
+.hud-crystal-val { color: var(--neon-green); }
+.hud-health-val { color: var(--neon-pink); }
+.hud-time-val { color: var(--neon-gold); }
+
+/* Game Bottom Bar */
+.game-controls-bar {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.game-actions-left {
+  pointer-events: auto;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.game-instructions {
+  background: rgba(7, 11, 20, 0.85);
+  border: 1px solid var(--border-neon);
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.key-kbd {
+  background: var(--bg-card);
+  border: 1px solid var(--border-neon);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  color: var(--neon-cyan);
+}
+
+/* Touch D-Pad for Mobile */
+.touch-dpad {
+  display: none;
+  pointer-events: auto;
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 20;
+}
+
+@media (max-width: 768px) {
+  .touch-dpad {
+    display: grid;
+    grid-template-areas: 
+      ". up ."
+      "left down right";
+    gap: 6px;
+  }
+  .game-instructions {
+    display: none;
+  }
+}
+
+.touch-btn {
+  width: 48px;
+  height: 48px;
+  background: rgba(13, 21, 39, 0.85);
+  border: 2px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.touch-btn:active {
+  background: var(--neon-cyan);
+  color: #000;
+}
+
+#btn-touch-up { grid-area: up; }
+#btn-touch-left { grid-area: left; }
+#btn-touch-down { grid-area: down; }
+#btn-touch-right { grid-area: right; }
+
+/* Modal Score Submission */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-active);
+  border-radius: 12px;
+  max-width: 460px;
+  width: 90%;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+  transform: scale(0.92);
+  transition: transform 0.25s ease;
+}
+
+.modal-overlay.active .modal-card {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.modal-title {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--neon-cyan);
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.modal-score-summary {
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border-neon);
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-score-big {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--neon-green);
+  margin-top: 0.25rem;
+}
+
+.modal-reason {
+  font-size: 0.85rem;
+  color: var(--neon-pink);
+  margin-top: 0.25rem;
+}

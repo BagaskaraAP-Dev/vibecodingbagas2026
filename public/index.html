@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VibeCoding Bagas 2026 — Full-Stack 3D Interactive Web</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/game.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-wrap">
+      <div class="brand">
+        <span class="logo-cube">VIBE</span>
+        <span>BAGAS2026</span>
+      </div>
+      <div class="nav-actions">
+        <div id="api-status-badge" class="status-pill">
+          <span class="pulse-dot"></span> MENYAMBUNGKAN KE API...
+        </div>
+        <button id="btn-toggle-sound" class="btn btn-outline" style="padding: 0.35rem 0.85rem; font-size: 0.85rem;">
+          🔊 Audio ON
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <span class="hero-tag">⚡ FULL-STACK VIBE CODER SHOWCASE 2026</span>
+      <h1 class="hero-title">
+        Cyber Realm <span>3D Game</span> & Live REST API
+      </h1>
+      <p class="hero-subtitle">
+        Aplikasi web interaktif nyata yang dibangun dari nol dengan arsitektur Full-Stack: 
+        <strong>Three.js WebGL</strong>, <strong>Node.js Express</strong>, dan <strong>SQLite Database</strong>.
+      </p>
+
+      <!-- 3D Game Arena -->
+      <div class="game-arena-wrapper">
+        <div id="game-canvas-container"></div>
+
+        <!-- In-Game HUD -->
+        <div class="game-hud">
+          <div class="hud-cluster">
+            <div class="hud-badge">
+              <span>SKOR:</span>
+              <span id="hud-score" class="hud-score-val">0</span>
+            </div>
+            <div class="hud-badge">
+              <span>💎 KRISTAL:</span>
+              <span id="hud-crystals" class="hud-crystal-val">0</span>
+            </div>
+          </div>
+          <div class="hud-cluster">
+            <div class="hud-badge">
+              <span>🛡️ PERISAI:</span>
+              <span id="hud-health" class="hud-health-val">100%</span>
+            </div>
+            <div class="hud-badge">
+              <span>⏳ WAKTU:</span>
+              <span id="hud-time" class="hud-time-val">60s</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Game Controls Bar -->
+        <div class="game-controls-bar">
+          <div class="game-actions-left">
+            <button id="btn-start-game" class="btn btn-primary">
+              ▶ MULAI GAME 3D
+            </button>
+            <button id="btn-restart-game" class="btn btn-secondary" style="display: none;">
+              🔄 MAIN ULANG
+            </button>
+          </div>
+          <div class="game-instructions">
+            KONTROL: <span class="key-kbd">W</span><span class="key-kbd">A</span><span class="key-kbd">S</span><span class="key-kbd">D</span> atau <span class="key-kbd">Panah</span> untuk Menjelajah
+          </div>
+        </div>
+
+        <!-- Mobile Touch Virtual D-Pad -->
+        <div class="touch-dpad">
+          <button id="btn-touch-up" class="touch-btn">▲</button>
+          <button id="btn-touch-left" class="touch-btn">◀</button>
+          <button id="btn-touch-down" class="touch-btn">▼</button>
+          <button id="btn-touch-right" class="touch-btn">▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Stats Bar -->
+    <section class="stats-bar">
+      <div class="stat-card">
+        <div id="stat-total-games" class="stat-value">0</div>
+        <div class="stat-label">Total Game Dimainkan</div>
+      </div>
+      <div class="stat-card">
+        <div id="stat-top-score" class="stat-value">0</div>
+        <div class="stat-label">Rekor Skor Tertinggi</div>
+      </div>
+      <div class="stat-card">
+        <div id="stat-total-msgs" class="stat-value">0</div>
+        <div class="stat-label">Pesan Buku Tamu</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--neon-green);">100%</div>
+        <div class="stat-label">Zero-Asset WebGL Speed</div>
+      </div>
+    </section>
+
+    <!-- Features & Community Section -->
+    <section class="features-grid">
+      <!-- Panel 1: Hall of Fame Leaderboard -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">🏆 Global Hall of Fame</h2>
+          <span class="status-pill" style="font-size: 0.75rem;">LIVE SQLITE DB</span>
+        </div>
+        <div id="leaderboard-list" class="leaderboard-list">
+          <div class="empty-state">Memuat data peringkat...</div>
+        </div>
+      </div>
+
+      <!-- Panel 2: Cyber Guestbook -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">📡 Cyber Guestbook</h2>
+          <span class="status-pill" style="font-size: 0.75rem;">REST API</span>
+        </div>
+
+        <form id="form-guestbook" class="guestbook-form">
+          <div class="form-row">
+            <input type="text" id="input-guest-name" class="input-field" placeholder="Nama Anda / Alias" maxlength="25" required>
+            <select id="select-guest-avatar" class="select-field" style="max-width: 130px;">
+              <option value="drone">🛸 Drone</option>
+              <option value="rover">🚙 Rover</option>
+              <option value="glitch">👾 Glitch</option>
+              <option value="pilot">🧑‍🚀 Pilot</option>
+            </select>
+          </div>
+          <textarea id="input-guest-msg" class="textarea-field" rows="2" placeholder="Tinggalkan pesan kesan / vibe support Anda..." maxlength="150" required></textarea>
+          <button type="submit" class="btn btn-secondary" style="width: 100%; justify-content: center;">
+            🚀 Kirim Pesan ke Server
+          </button>
+        </form>
+
+        <div id="guestbook-list" class="guestbook-feed">
+          <div class="empty-state">Memuat pesan...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture & Vibe Stack Showcase -->
+    <section class="panel" style="margin-top: 2rem;">
+      <div class="panel-header">
+        <h2 class="panel-title">🛠️ Arsitektur Full-Stack Vibe Coder</h2>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+        <div>
+          <h3 style="color: var(--neon-cyan); margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 1rem;">1. 3D WebGL Engine</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Dibangun dengan Three.js r128 murni. Menggunakan procedural geometry tanpa asset eksternal berat, third-person smooth camera, dan particle burst.
+          </p>
+        </div>
+        <div>
+          <h3 style="color: var(--neon-green); margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 1rem;">2. Backend & SQLite DB</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Node.js + Express REST API dengan SQLite persistent database. Sanitasi data, prepared statements, dan validasi input.
+          </p>
+        </div>
+        <div>
+          <h3 style="color: var(--neon-gold); margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 1rem;">3. Web Audio Synth</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Sound FX sintetis dibangkitkan langsung via kode Web Audio API tanpa beban bandwidth file MP3 atau buffer latency.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Submit Score -->
+  <div id="score-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🏁 Misi Selesai!</h3>
+        <button id="modal-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-score-summary">
+        <div>TOTAL SKOR ANDA:</div>
+        <div id="modal-final-score" class="modal-score-big">0</div>
+        <div id="modal-reason" class="modal-reason"></div>
+        <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--neon-green);">
+          💎 Kristal Terkumpul: <span id="modal-final-crystals">0</span>
+        </div>
+      </div>
+
+      <form id="form-submit-score">
+        <label style="display: block; font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-muted);">
+          CATAT REKOR KE LEADERBOARD:
+        </label>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+          <input type="text" id="input-player-name" class="input-field" placeholder="Ketik Nama Pilot Anda..." maxlength="20" required>
+          <button type="submit" class="btn btn-primary" style="white-space: nowrap;">
+            SIMPAN
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>VibeCoding Bagas 2026 • Crafted with passion by <strong>Bagaskara Amukti Palapa</strong> (@BagaskaraAP-Dev)</p>
+      <p style="margin-top: 0.4rem; color: #64748b; font-size: 0.8rem;">
+        Node.js • Three.js • Express • SQLite • Linux Mint
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="/js/audio.js"></script>
+  <script src="/js/game.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
