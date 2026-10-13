@@ -1,103 +1,56 @@
-# VibeCoding Bagas 2026 🚀
+# 🚀 MOONCRUST // PIXEL AI STUDIO & COMMAND CENTER
 
-[![Node.js](https://img.shields.io/badge/Node.js-20.x-green.svg)](https://nodejs.org/)
-[![Three.js](https://img.shields.io/badge/Three.js-r128-black.svg)](https://threejs.org/)
-[![Database](https://img.shields.io/badge/SQLite-WAL--Mode-blue.svg)](https://sqlite.org/)
-[![Status](https://img.shields.io/badge/Status-Complete-brightgreen.svg)](https://github.com/BagaskaraAP-Dev/vibecodingbagas2026)
-
-Aplikasi Web **Full-Stack 3D Interactive Experience** yang dibangun dari awal oleh **Bagaskara Amukti Palapa** (@BagaskaraAP-Dev) dengan metodologi murni **Vibe Coding**.
-
-Menggabungkan eksplorasi dunia 3D WebGL (Three.js), kontrol rover/drone interaktif, efek suara prosedural Web Audio API, serta persistent backend REST API dengan database relasional SQLite.
+Aplikasi web simulasi Mission Control Dashboard bergaya **2D Pixel Art & Retro Isometric Game** dengan **4 Autonomous Specialist Sub-Agents** yang bergerak, berinteraksi, dan bekerja sama dalam rantai tugas rekayasa perangkat lunak (*Auto-Pipeline Mode*).
 
 ---
 
 ## 🌟 Fitur Utama
 
-1. **🎮 3D Cyber Realm Arena (Three.js)**
-   - Grafis 3D procedural synthwave dengan dynamic lighting dan particle burst.
-   - Kontrol navigasi mulus menggunakan keyboard (`W`, `A`, `S`, `D` / Panah) dan On-screen D-Pad untuk mobile touch.
-   - Mekanisme kumpul kristal energi, perisai, dan rintangan glitch.
-2. **🔊 Zero-Asset Sound Synthesizer (Web Audio API)**
-   - Efek suara audio instan tanpa file MP3 atau latency download.
-3. **🏆 Global Hall of Fame Leaderboard**
-   - Skor game otomatis dicatat ke database SQLite via REST API `POST /api/leaderboard`.
-   - Menampilkan podium medali (Emas, Perak, Perunggu).
-4. **📡 Cyber Guestbook (Buku Tamu Real-time)**
-   - Pengunjung dapat mengirim pesan langsung dengan pilihan avatar cyberpunk.
-5. **📊 Live Server Stats & Health Check**
-   - Status server online live, total permainan, dan rekor skor tertinggi.
+### 1. Ruangan Studio Pixel & Lingkungan Interaktif
+- **HTML5 Canvas 2D Pixel Simulator (960x540):** Simulasi frame-by-frame dengan lantai berpetak (*checkered floor*), interior detail, dan efek scanline retro.
+- **Papan Neon Menyala "MOONCRUST":** Efek neon berpendar (*diffuse glow*) dinamis di dinding ruangan.
+- **Interior & Fasilitas Lengkap:**
+  - 🖥️ **Rak Server Multi-Blade:** Lampu LED berkedip asinkron, ventilasi kisi-kisi, dan kabel loom fiber.
+  - 📋 **Papan Tulis Agile (Whiteboard):** Sticky notes, sprint backlog kolom TODO/DOING/DONE, dan diagram arsitektur.
+  - ☕ **Pojok Mesin Kopi:** Partikel uap animasi bergerak naik, cangkir kopi, dan galon air.
+  - 🪴 **Tanaman Pixel:** Tanaman monstera berarsir di sudut ruangan.
+  - 🌌 **Jendela Observasi:** Pemandangan langit berbintang malam hari dan permukaan bulan dengan satelit melintas.
+
+### 2. 4 Karakter Sub-Agent Spesialis
+1. **[UI/UX-Bot] (Kostum Cyan - Meja Drawing Tablet & Wireframe):**
+   - Merancang user flows, struktur wireframe halaman, sistem desain (*color tokens, typography*), dan verifikasi heuristik usability.
+2. **[FE-Bot] (Kostum Biru - Meja Dual Monitor UI):**
+   - Mengubah wireframe menjadi kode nyata (HTML5 semantic, CSS3/Tailwind, JavaScript modern), responsivitas layar, dan komponen interaktif dengan live preview.
+3. **[BE-Bot] (Kostum Ungu - Meja Server Rack Console):**
+   - Merancang skema relasional database (SQL DDL, indexing, constraints), arsitektur REST API, autentikasi JWT, dan integrasi server.
+4. **[SEC-Bot] (Kostum Merah/Emas - Meja Radar & Terminal Hijau):**
+   - Spesialis Cyber Security & CTF Solver: Audit celah OWASP Top 10 (SQLi, XSS, CSRF, IDOR), simulator CTF crypto & reverse solver, serta security hardening patch.
+
+### 3. Sistem Kerja Otonom & Auto-Pipeline Mode
+- **Autonomous Room Loop:** Saat idle, karakter secara berkala berjalan mengambil kopi, memeriksa server, meninjau papan tulis, mendatangi rekan untuk berdiskusi, dan memunculkan balon teks (*speech bubble*).
+- **Auto-Pipeline Mode:** Menjalankan alur sekuensial kolaboratif (UI/UX ➔ FE ➔ BE ➔ SEC) untuk menghasilkan artefak rekayasa lengkap berdasarkan topik tugas.
+- **Inspector Telemetry:** Klik agen mana pun untuk melihat metrik efisiensi, status, stasiun kerja, dan pemikiran terkini.
+- **8-Bit Web Audio Synthesizer:** Efek suara retro prosedural (blip teks, ketukan keyboard, radar sweep, chime progres, dan level-up fanfare) dengan tombol mute/unmute.
 
 ---
 
-## 🏗️ Spesifikasi & Arsitektur
+## 🛠️ Menjalankan Secara Lokal
 
-- **Dokumen Produk:** Baca selengkapnya di [PRD.md](PRD.md).
-- **Spesifikasi Teknis:** Baca selengkapnya di [SPECIFICATION.md](SPECIFICATION.md).
+```bash
+# Clone repository
+git clone git@github.com:BagaskaraAP-Dev/vibecodingbagas2026.git
+cd vibecodingbagas2026
 
-```text
-vibecodingbagas2026/
-├── PRD.md                       # Product Requirements Document
-├── SPECIFICATION.md             # Technical Architecture Specification
-├── README.md                    # Dokumentasi proyek
-├── package.json                 # Dependencies & scripts
-├── server.js                    # Express REST API server & static serving
-├── db.js                        # Database connection & SQLite schema
-├── test/
-│   └── api.test.js              # Automated test suite
-└── public/
-    ├── index.html               # Main landing page & 3D game UI
-    ├── css/
-    │   ├── style.css            # Neo-brutalist styling & HUD
-    │   └── game.css             # 3D canvas viewport & controls
-    └── js/
-        ├── audio.js             # Web Audio API sound synthesizer
-        ├── game.js              # Three.js 3D game loop & physics
-        └── app.js               # Client controller & REST API consumer
+# Install dependencies
+npm install
+
+# Jalankan server
+npm start
 ```
+Buka browser pada `http://localhost:3000`.
 
 ---
 
-## 🚀 Cara Menjalankan Secara Lokal
+## 🚀 Deployment
 
-1. **Clone repository ini:**
-   ```bash
-   git clone https://github.com/BagaskaraAP-Dev/vibecodingbagas2026.git
-   cd vibecodingbagas2026
-   ```
-
-2. **Pasang dependensi:**
-   ```bash
-   npm install
-   ```
-
-3. **Jalankan pengujian otomatis:**
-   ```bash
-   npm test
-   ```
-
-4. **Jalankan server aplikasi:**
-   ```bash
-   npm start
-   ```
-
-5. **Buka di peramban web:**
-   Akses `http://localhost:3000`
-
----
-
-## 📡 Dokumentasi Endpoint REST API
-
-| Method | Endpoint | Keterangan |
-| :--- | :--- | :--- |
-| `GET` | `/api/health` | Status server, uptime, dan versi |
-| `GET` | `/api/stats` | Statistik total game & buku tamu |
-| `GET` | `/api/leaderboard` | Mengambil Top 10 skor tertinggi |
-| `POST` | `/api/leaderboard` | Menyimpan skor game baru |
-| `GET` | `/api/guestbook` | Mengambil daftar pesan buku tamu |
-| `POST` | `/api/guestbook` | Mengirim pesan baru ke buku tamu |
-
----
-
-## 👨‍💻 Pengembang
-Dibuat oleh **Bagaskara Amukti Palapa** ([@BagaskaraAP-Dev](https://github.com/BagaskaraAP-Dev))  
-Palembang, Indonesia.
+Dideploy secara publik ke Vercel Edge Network menggunakan Vercel CLI.

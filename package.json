@@ -1,17 +1,15 @@
 {
-  "name": "vibecodingbagas2026",
-  "version": "1.0.0",
-  "description": "Full-Stack 3D Interactive Web Experience & Game - VibeCoding Bagas 2026",
+  "name": "mooncrust-pixel-ai-studio",
+  "version": "2.0.0",
+  "description": "MOONCRUST // PIXEL AI STUDIO & COMMAND CENTER - Autonomous 4-Agent Mission Control Dashboard",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "node test/api.test.js"
+    "dev": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7"
+    "express": "^4.19.2"
   }
 }

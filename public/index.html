@@ -3,284 +3,361 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VibeCoding Bagas 2026 — Full-Stack 3D Interactive Web</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/game.css">
-  <link rel="stylesheet" href="/css/pixel-agent.css">
+  <title>MOONCRUST // PIXEL AI STUDIO & COMMAND CENTER</title>
+  <meta name="description" content="Mission Control Dashboard with 4 Autonomous Specialist Sub-Agents simulating 2D Pixel Art tech studio room and automated engineering pipeline.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 </head>
 <body>
 
-  <!-- Navbar -->
-  <header class="navbar">
-    <div class="container nav-wrap">
-      <div class="brand">
-        <span class="logo-cube">VIBE</span>
-        <span>BAGAS2026</span>
+  <!-- Top Navigation / Mission Control Bar -->
+  <header class="studio-header">
+    <div class="brand-wrapper">
+      <div class="brand-logo-pixel">MC</div>
+      <div>
+        <h1 class="brand-title">MOONCRUST // <span>PIXEL AI STUDIO</span></h1>
+        <div class="brand-subtitle">MISSION CONTROL DASHBOARD & AUTONOMOUS 4-AGENT TECH LAB</div>
       </div>
-      <div class="nav-actions">
-        <div id="api-status-badge" class="status-pill">
-          <span class="pulse-dot"></span> MENYAMBUNGKAN KE API...
-        </div>
-        <button id="btn-toggle-sound" class="btn btn-outline" style="padding: 0.35rem 0.85rem; font-size: 0.85rem;">
-          🔊 Audio ON
-        </button>
+    </div>
+
+    <div class="header-status-group">
+      <div class="status-pill">
+        <span class="indicator-dot"></span>
+        <span id="systemStatusText">4/4 AGENTS ONLINE</span>
       </div>
+      <button id="toggleAudioBtn" class="btn-header" onclick="toggleAudio()">
+        🔊 AUDIO: ON
+      </button>
+      <button class="btn-header" onclick="resetStudioPositions()">
+        🔄 RESET AGENTS
+      </button>
     </div>
   </header>
 
-  <main class="container">
-    <!-- Hero Section -->
-    <section class="hero-section">
-      <span class="hero-tag">⚡ FULL-STACK VIBE CODER SHOWCASE 2026</span>
-      <h1 class="hero-title">
-        Cyber Realm <span>3D Game</span> & Live REST API
-      </h1>
-      <p class="hero-subtitle">
-        Aplikasi web interaktif nyata yang dibangun dari nol dengan arsitektur Full-Stack: 
-        <strong>Three.js WebGL</strong>, <strong>Node.js Express</strong>, dan <strong>SQLite Database</strong>.
-      </p>
+  <!-- Main Content Layout -->
+  <main class="main-wrapper">
 
-      <!-- 3D Game Arena -->
-      <div class="game-arena-wrapper">
-        <div id="game-canvas-container"></div>
+    <!-- 1. 2D Pixel Art Studio Room (HTML5 Canvas) -->
+    <section class="studio-canvas-card">
+      <div class="canvas-toolbar">
+        <div>📍 SIMULATION: 2D PIXEL ISOMETRIC TECH HUB (960x540)</div>
+        <div>STATION LIGHTS: <span style="color:#00f3ff">● CYAN</span> <span style="color:#3b82f6">● BLUE</span> <span style="color:#a855f7">● PURPLE</span> <span style="color:#ef4444">● RED</span></div>
+      </div>
 
-        <!-- In-Game HUD -->
-        <div class="game-hud">
-          <div class="hud-cluster">
-            <div class="hud-badge">
-              <span>SKOR:</span>
-              <span id="hud-score" class="hud-score-val">0</span>
-            </div>
-            <div class="hud-badge">
-              <span>💎 KRISTAL:</span>
-              <span id="hud-crystals" class="hud-crystal-val">0</span>
-            </div>
-          </div>
-          <div class="hud-cluster">
-            <div class="hud-badge">
-              <span>🛡️ PERISAI:</span>
-              <span id="hud-health" class="hud-health-val">100%</span>
-            </div>
-            <div class="hud-badge">
-              <span>⏳ WAKTU:</span>
-              <span id="hud-time" class="hud-time-val">60s</span>
-            </div>
-          </div>
+      <div class="canvas-viewport">
+        <canvas id="studioCanvas" width="960" height="540"></canvas>
+      </div>
+
+      <!-- Agent Selection Quick Bar -->
+      <div class="agent-chips-bar">
+        <span style="font-family: var(--font-pixel); font-size: 8px; color: var(--text-muted); margin-right: 4px;">SPECIALISTS:</span>
+        <div class="agent-chip" data-bot="uiux" onclick="window.pixelStudio.selectAgent('uiux')">
+          <span class="chip-dot" style="background:#00f3ff"></span>
+          <span>[UI/UX-Bot] Drawing Tablet</span>
         </div>
-
-        <!-- Game Controls Bar -->
-        <div class="game-controls-bar">
-          <div class="game-actions-left">
-            <button id="btn-start-game" class="btn btn-primary">
-              ▶ MULAI GAME 3D
-            </button>
-            <button id="btn-restart-game" class="btn btn-secondary" style="display: none;">
-              🔄 MAIN ULANG
-            </button>
-          </div>
-          <div class="game-instructions">
-            KONTROL: <span class="key-kbd">W</span><span class="key-kbd">A</span><span class="key-kbd">S</span><span class="key-kbd">D</span> atau <span class="key-kbd">Panah</span> untuk Menjelajah
-          </div>
+        <div class="agent-chip" data-bot="fe" onclick="window.pixelStudio.selectAgent('fe')">
+          <span class="chip-dot" style="background:#3b82f6"></span>
+          <span>[FE-Bot] Dual Monitors</span>
         </div>
+        <div class="agent-chip" data-bot="be" onclick="window.pixelStudio.selectAgent('be')">
+          <span class="chip-dot" style="background:#a855f7"></span>
+          <span>[BE-Bot] Server Console</span>
+        </div>
+        <div class="agent-chip" data-bot="sec" onclick="window.pixelStudio.selectAgent('sec')">
+          <span class="chip-dot" style="background:#ef4444"></span>
+          <span>[SEC-Bot] Radar & Terminal</span>
+        </div>
+      </div>
 
-        <!-- Mobile Touch Virtual D-Pad -->
-        <div class="touch-dpad">
-          <button id="btn-touch-up" class="touch-btn">▲</button>
-          <button id="btn-touch-left" class="touch-btn">◀</button>
-          <button id="btn-touch-down" class="touch-btn">▼</button>
-          <button id="btn-touch-right" class="touch-btn">▶</button>
+      <!-- Live Running Ticker -->
+      <div class="ticker-bar">
+        <span class="ticker-icon">▶ RUNNING:</span>
+        <div id="liveStatusTicker" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          Studio room active. Agents walking between workstations, checking server rack & whiteboard.
         </div>
       </div>
     </section>
 
-    <!-- Live Stats Bar -->
-    <section class="stats-bar">
-      <div class="stat-card">
-        <div id="stat-total-games" class="stat-value">0</div>
-        <div class="stat-label">Total Game Dimainkan</div>
-      </div>
-      <div class="stat-card">
-        <div id="stat-top-score" class="stat-value">0</div>
-        <div class="stat-label">Rekor Skor Tertinggi</div>
-      </div>
-      <div class="stat-card">
-        <div id="stat-total-msgs" class="stat-value">0</div>
-        <div class="stat-label">Pesan Buku Tamu</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color: var(--neon-green);">100%</div>
-        <div class="stat-label">Zero-Asset WebGL Speed</div>
-      </div>
-    </section>
-
-    <!-- Features & Community Section -->
-    <section class="features-grid">
-      <!-- Panel 1: Hall of Fame Leaderboard -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">🏆 Global Hall of Fame</h2>
-          <span class="status-pill" style="font-size: 0.75rem;">LIVE SQLITE DB</span>
+    <!-- 2. Mission Control Deck & Auto-Pipeline Launcher -->
+    <section class="control-deck">
+      <div class="deck-title-row">
+        <div class="deck-title">
+          <span>⚡</span> AUTONOMOUS AUTO-PIPELINE CONTROLLER
         </div>
-        <div id="leaderboard-list" class="leaderboard-list">
-          <div class="empty-state">Memuat data peringkat...</div>
+        <div id="pipelineBadge" class="pipeline-badge">
+          IDLE / READY TO LAUNCH
         </div>
       </div>
 
-      <!-- Panel 2: Cyber Guestbook -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">📡 Cyber Guestbook</h2>
-          <span class="status-pill" style="font-size: 0.75rem;">REST API</span>
+      <!-- Input Form -->
+      <div class="input-container">
+        <input 
+          type="text" 
+          id="taskTopicInput" 
+          class="task-input-field" 
+          placeholder="Enter task topic (e.g., E-Commerce Checkout System, CTF Challenge, Student Academic Portal)..."
+          value="E-Commerce Secure Checkout System (OWASP Hardened)"
+        >
+        <button id="launchPipelineBtn" class="btn-launch" onclick="launchTaskPipeline()">
+          <span>🚀</span> LAUNCH AUTO-PIPELINE
+        </button>
+      </div>
+
+      <!-- Quick Preset Buttons -->
+      <div class="presets-group">
+        <span class="presets-label">QUICK PRESETS:</span>
+        <button class="preset-chip" onclick="applyPreset('ecommerce')">
+          🛒 E-Commerce Checkout
+        </button>
+        <button class="preset-chip" onclick="applyPreset('campus')">
+          🎓 Kampus Academic Portal
+        </button>
+        <button class="preset-chip" onclick="applyPreset('ctf')">
+          🚩 CTF Crypto & SQLi Lab
+        </button>
+        <button class="preset-chip" onclick="applyPreset('iot')">
+          📡 Real-Time IoT Stream
+        </button>
+      </div>
+
+      <!-- Stage Stepper Visualizer -->
+      <div class="stage-stepper">
+        <div class="progress-track">
+          <div id="pipelineProgressFill" class="progress-fill"></div>
         </div>
 
-        <form id="form-guestbook" class="guestbook-form">
-          <div class="form-row">
-            <input type="text" id="input-guest-name" class="input-field" placeholder="Nama Anda / Alias" maxlength="25" required>
-            <select id="select-guest-avatar" class="select-field" style="max-width: 130px;">
-              <option value="drone">🛸 Drone</option>
-              <option value="rover">🚙 Rover</option>
-              <option value="glitch">👾 Glitch</option>
-              <option value="pilot">🧑‍🚀 Pilot</option>
-            </select>
+        <div class="stages-grid">
+          <div class="stage-node" data-step="1">
+            <div class="node-icon">🎨</div>
+            <div class="node-title">1. UI/UX-BOT</div>
+            <div class="node-sub">User Flows & Tokens</div>
           </div>
-          <textarea id="input-guest-msg" class="textarea-field" rows="2" placeholder="Tinggalkan pesan kesan / vibe support Anda..." maxlength="150" required></textarea>
-          <button type="submit" class="btn btn-secondary" style="width: 100%; justify-content: center;">
-            🚀 Kirim Pesan ke Server
-          </button>
-        </form>
-
-        <div id="guestbook-list" class="guestbook-feed">
-          <div class="empty-state">Memuat pesan...</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Architecture & Vibe Stack Showcase -->
-    <section class="panel" style="margin-top: 2rem;">
-      <div class="panel-header">
-        <h2 class="panel-title">🛠️ Arsitektur Full-Stack Vibe Coder</h2>
-      </div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
-        <div>
-          <h3 style="color: var(--neon-cyan); margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 1rem;">1. 3D WebGL Engine</h3>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">
-            Dibangun dengan Three.js r128 murni. Menggunakan procedural geometry tanpa asset eksternal berat, third-person smooth camera, dan particle burst.
-          </p>
-        </div>
-        <div>
-          <h3 style="color: var(--neon-green); margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 1rem;">2. Backend & SQLite DB</h3>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">
-            Node.js + Express REST API dengan SQLite persistent database. Sanitasi data, prepared statements, dan validasi input.
-          </p>
-        </div>
-        <div>
-          <h3 style="color: var(--neon-gold); margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 1rem;">3. Web Audio Synth</h3>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">
-            Sound FX sintetis dibangkitkan langsung via kode Web Audio API tanpa beban bandwidth file MP3 atau buffer latency.
-          </p>
-        </div>
-    <!-- Autonomous Pixel AI Agent Showcase -->
-    <section class="agent-showcase-panel">
-      <div class="panel-header" style="border-bottom: none; margin-bottom: 0;">
-        <h2 class="panel-title">🤖 BagasBot — Autonomous Pixel AI Worker</h2>
-      </div>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
-        Agen kecerdasan buatan beranimasi pixel 16-bit yang dapat bekerja mandiri (*autonomous task loop*) untuk memelihara sistem & database.
-      </p>
-
-      <div class="agent-workspace-grid">
-        <!-- Pixel Sprite Stage -->
-        <div class="agent-stage">
-          <canvas id="pixel-agent-canvas"></canvas>
-          <div class="agent-meta">
-            <div class="agent-name">BAGAS-BOT v1.0</div>
-            <div class="agent-role">Autonomous Full-Stack AI Worker</div>
-            <div id="agent-state-pill" class="agent-state-pill">STANDBY</div>
+          <div class="stage-node" data-step="2">
+            <div class="node-icon">💻</div>
+            <div class="node-title">2. FE-BOT</div>
+            <div class="node-sub">HTML/Tailwind Code</div>
           </div>
-        </div>
-
-        <!-- Terminal & Task Executor -->
-        <div class="agent-terminal">
-          <div class="agent-terminal-header">
-            <div class="terminal-dots">
-              <span></span><span></span><span></span>
-            </div>
-            <span>BAGAS_BOT_TERMINAL • LIVE PID: 4092</span>
+          <div class="stage-node" data-step="3">
+            <div class="node-icon">🗄️</div>
+            <div class="node-title">3. BE-BOT</div>
+            <div class="node-sub">SQL Schema & REST API</div>
           </div>
-
-          <div id="agent-terminal-logs" class="agent-terminal-logs"></div>
-
-          <div class="agent-actions">
-            <select id="agent-task-select" class="agent-select">
-              <option value="audit">🔍 Security Audit & SQLi Check</option>
-              <option value="optimize">⚡ Database Vacuum & Re-Indexing</option>
-              <option value="test">🧪 Run Synthetic Unit-Tests</option>
-              <option value="deploy">🚀 Simulate Edge CI/CD Deploy</option>
-            </select>
-            <button id="btn-run-agent-task" class="btn-agent-run">
-              ▶ TUGASKAN
-            </button>
-            <button id="btn-toggle-autopilot" class="btn-auto-toggle">
-              ⚡ AUTO-PILOT: OFF
-            </button>
+          <div class="stage-node" data-step="4">
+            <div class="node-icon">🛡️</div>
+            <div class="node-title">4. SEC-BOT</div>
+            <div class="node-sub">OWASP Audit & CTF</div>
           </div>
         </div>
       </div>
     </section>
+
+    <!-- 3. Inspector Card (Current Selected Agent) -->
+    <section id="inspectorSection" class="inspector-card">
+      <div class="inspector-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span id="inspectBadge" style="width:12px; height:12px; background:#00f3ff; border-radius:2px; display:inline-block;"></span>
+          <span id="inspectName" class="inspector-agent-name">UI/UX-Bot (Lead UI/UX Architect)</span>
+        </div>
+        <span id="inspectStatus" class="status-mitigated">ACTIVE & MONITORED</span>
+      </div>
+      <div id="inspectDesc" class="inspector-meta">
+        Specialist in User Flows, Wireframes, Design Tokens & Heuristic Usability. Equipped with Cyan Visor & Digital Stylus.
+      </div>
+      <div style="display:flex; gap:15px; flex-wrap:wrap; font-size:12px; color:var(--text-muted); border-top:1px solid #1e293b; padding-top:8px;">
+        <div>Tasks Finished: <strong id="inspectTasks" style="color:#fff">42</strong></div>
+        <div>Efficiency: <strong id="inspectEff" style="color:#34d399">99.4%</strong></div>
+        <div>Current Station: <strong id="inspectStation" style="color:#38bdf8">Drawing Tablet Station</strong></div>
+        <div>Last Thought: <em id="inspectThought" style="color:#fde047">"Drafting mobile wireframe layout..."</em></div>
+      </div>
+    </section>
+
+    <!-- 4. Deliverables Output Panel with Tabs -->
+    <section class="deliverable-card">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('uiux')">
+          <span>🎨</span> UI/UX Specs
+        </button>
+        <button class="tab-btn" onclick="switchTab('fe')">
+          <span>💻</span> Frontend Code
+        </button>
+        <button class="tab-btn" onclick="switchTab('be')">
+          <span>🗄️</span> Backend Schema & API
+        </button>
+        <button class="tab-btn" onclick="switchTab('sec')">
+          <span>🛡️</span> Security & CTF Audit
+        </button>
+        <button class="tab-btn" onclick="switchTab('summary')">
+          <span>📋</span> Mission Summary
+        </button>
+      </div>
+
+      <!-- Tab 1: UI/UX -->
+      <div id="tabContent-uiux" class="tab-panel active">
+        <div class="deliverable-header">
+          <span class="deliverable-badge bg-cyan">UI/UX-Bot (Cyan Station)</span>
+          <span class="deliverable-time">Standby</span>
+        </div>
+        <h3 class="deliverable-title text-cyan">🎨 UI/UX Architecture & Design System Specification</h3>
+        <p class="text-muted">Launch the pipeline above to see UI/UX-Bot draft custom user journeys, tokens, and wireframes for your topic.</p>
+      </div>
+
+      <!-- Tab 2: Frontend -->
+      <div id="tabContent-fe" class="tab-panel">
+        <div class="deliverable-header">
+          <span class="deliverable-badge bg-blue">FE-Bot (Blue Station)</span>
+          <span class="deliverable-time">Standby</span>
+        </div>
+        <h3 class="deliverable-title text-blue">💻 Responsive Frontend Component & Interactive Code</h3>
+        <p class="text-muted">Launch the pipeline to see FE-Bot generate full semantic HTML5 and CSS/Tailwind component code with a live preview.</p>
+      </div>
+
+      <!-- Tab 3: Backend -->
+      <div id="tabContent-be" class="tab-panel">
+        <div class="deliverable-header">
+          <span class="deliverable-badge bg-purple">BE-Bot (Purple Station)</span>
+          <span class="deliverable-time">Standby</span>
+        </div>
+        <h3 class="deliverable-title text-purple">🗄️ Relational SQL Schema & RESTful API Architecture</h3>
+        <p class="text-muted">Launch the pipeline to see BE-Bot generate PostgreSQL DDL tables, indexes, and Express.js REST controllers.</p>
+      </div>
+
+      <!-- Tab 4: Security -->
+      <div id="tabContent-sec" class="tab-panel">
+        <div class="deliverable-header">
+          <span class="deliverable-badge bg-red">SEC-Bot (Red/Gold Station)</span>
+          <span class="deliverable-time">Standby</span>
+        </div>
+        <h3 class="deliverable-title text-red">🛡️ Cyber Security Penetration Audit & CTF Challenge Lab</h3>
+        <p class="text-muted">Launch the pipeline to see SEC-Bot run an OWASP Top 10 pentest, simulate CTF crypto solvers, and produce security hardening diffs.</p>
+      </div>
+
+      <!-- Tab 5: Summary -->
+      <div id="tabContent-summary" class="tab-panel">
+        <div class="deliverable-header">
+          <span class="deliverable-badge bg-green">MISSION SUMMARY</span>
+          <span class="deliverable-time">Ready</span>
+        </div>
+        <h3 class="deliverable-title text-green">🚀 Full Project Deliverables Overview</h3>
+        <p class="text-muted">Once all stages finish, the combined project artifact will be compiled here.</p>
+      </div>
+    </section>
+
   </main>
 
-  <!-- Modal Submit Score -->
-  <div id="score-modal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title">🏁 Misi Selesai!</h3>
-        <button id="modal-close" class="modal-close-btn">&times;</button>
-      </div>
-      <div class="modal-score-summary">
-        <div>TOTAL SKOR ANDA:</div>
-        <div id="modal-final-score" class="modal-score-big">0</div>
-        <div id="modal-reason" class="modal-reason"></div>
-        <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--neon-green);">
-          💎 Kristal Terkumpul: <span id="modal-final-crystals">0</span>
-        </div>
-      </div>
-
-      <form id="form-submit-score">
-        <label style="display: block; font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-muted);">
-          CATAT REKOR KE LEADERBOARD:
-        </label>
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-          <input type="text" id="input-player-name" class="input-field" placeholder="Ketik Nama Pilot Anda..." maxlength="20" required>
-          <button type="submit" class="btn btn-primary" style="white-space: nowrap;">
-            SIMPAN
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Toast Notification -->
-  <div id="toast" class="toast"></div>
-
   <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <p>VibeCoding Bagas 2026 • Crafted with passion by <strong>Bagaskara Amukti Palapa</strong> (@BagaskaraAP-Dev)</p>
-      <p style="margin-top: 0.4rem; color: #64748b; font-size: 0.8rem;">
-        Node.js • Three.js • Express • SQLite • Linux Mint
-      </p>
+  <footer class="studio-footer">
+    <div>
+      <strong>MOONCRUST // PIXEL AI STUDIO</strong> &copy; 2026. Built with HTML5 Canvas, Web Audio API & Autonomous Agentic Pipelines.
+    </div>
+    <div>
+      Status: <span style="color:#10b981">Operational</span> | Engine: <span style="color:#00f3ff">Mooncrust 2D Pixel Kernel</span>
     </div>
   </footer>
 
   <!-- Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="/js/audio.js"></script>
-  <script src="/js/game.js"></script>
-  <script src="/js/pixel-agent.js"></script>
-  <script src="/js/app.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/studio.js"></script>
+  <script src="js/pipeline.js"></script>
+
+  <script>
+    // Audio toggle handler
+    function toggleAudio() {
+      if (window.studioAudio) {
+        const isMuted = window.studioAudio.toggleMute();
+        const btn = document.getElementById('toggleAudioBtn');
+        if (btn) {
+          btn.textContent = isMuted ? '🔇 AUDIO: MUTED' : '🔊 AUDIO: ON';
+          btn.style.color = isMuted ? '#ef4444' : '#f3f4f6';
+        }
+      }
+    }
+
+    // Reset agent positions to their home workstations
+    function resetStudioPositions() {
+      if (window.pixelStudio) {
+        const studio = window.pixelStudio;
+        studio.agents.forEach(agent => {
+          const home = studio.stations[agent.stationId];
+          agent.targetX = home.x;
+          agent.targetY = home.y;
+          agent.state = 'WORKING';
+        });
+        if (window.studioAudio) window.studioAudio.playKey();
+        studio.showStationInfo('whiteboard');
+      }
+    }
+
+    // Apply quick preset to input field
+    function applyPreset(presetKey) {
+      if (window.pipelineEngine && window.pipelineEngine.presets[presetKey]) {
+        const input = document.getElementById('taskTopicInput');
+        if (input) {
+          input.value = window.pipelineEngine.presets[presetKey];
+          input.focus();
+        }
+        if (window.studioAudio) window.studioAudio.playKey();
+      }
+    }
+
+    // Launch pipeline execution
+    function launchTaskPipeline() {
+      const input = document.getElementById('taskTopicInput');
+      const topic = input ? input.value : 'E-Commerce Secure Checkout System';
+      if (window.pipelineEngine) {
+        window.pipelineEngine.runPipeline(topic);
+      }
+    }
+
+    // Tab switching logic
+    function switchTab(tabKey) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabKey));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const targetPanel = document.getElementById(`tabContent-${tabKey}`);
+      if (targetPanel) targetPanel.classList.add('active');
+
+      if (window.studioAudio) window.studioAudio.playKey();
+    }
+
+    // Update Inspector UI Card when an agent is selected
+    window.updateInspectorCard = function(agent) {
+      const palette = window.pixelSprites.getPalette(agent.id);
+      document.getElementById('inspectBadge').style.background = palette.primary;
+      document.getElementById('inspectName').textContent = `${agent.name} (${palette.title})`;
+      document.getElementById('inspectDesc').textContent = agent.desc;
+      document.getElementById('inspectTasks').textContent = agent.stats.tasksCompleted;
+      document.getElementById('inspectEff').textContent = agent.stats.efficiency;
+      document.getElementById('inspectStation').textContent = window.pixelStudio.stations[agent.stationId].name;
+      document.getElementById('inspectThought').textContent = `"${agent.bubble ? agent.bubble.text : 'Processing next task cycle...'}"`;
+
+      // Highlight corresponding chip
+      document.querySelectorAll('.agent-chip').forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.bot === agent.id);
+      });
+    };
+
+    // Auto-pre-generate default deliverable view so page is informative immediately on load
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        if (window.pipelineEngine) {
+          const defaultTopic = 'E-Commerce Secure Checkout System (OWASP Hardened)';
+          window.pipelineEngine.currentTaskTopic = defaultTopic;
+          window.pipelineEngine.deliverables.uiux = window.pipelineEngine.generateUIUXDeliverable(defaultTopic);
+          window.pipelineEngine.deliverables.fe = window.pipelineEngine.generateFEDeliverable(defaultTopic);
+          window.pipelineEngine.deliverables.be = window.pipelineEngine.generateBEDeliverable(defaultTopic);
+          window.pipelineEngine.deliverables.sec = window.pipelineEngine.generateSECDeliverable(defaultTopic);
+          window.pipelineEngine.renderDeliverableTab('uiux');
+          window.pipelineEngine.renderDeliverableTab('fe');
+          window.pipelineEngine.renderDeliverableTab('be');
+          window.pipelineEngine.renderDeliverableTab('sec');
+          window.pipelineEngine.renderDeliverableTab('summary');
+        }
+      }, 500);
+    });
+  </script>
 </body>
 </html>
