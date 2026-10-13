@@ -1,5 +1,5 @@
 // Pixel Art Character Sprite Renderer for MOONCRUST // PIXEL AI STUDIO
-// Procedural pixel-art engine for 4 distinct specialist sub-agents
+// Procedural pixel-art engine for 5 distinct specialist sub-agents
 
 class PixelSpriteEngine {
   constructor() {
@@ -113,6 +113,19 @@ class PixelSpriteEngine {
           skin: '#fed7aa',
           glow: 'rgba(239, 68, 68, 0.6)'
         };
+      case 'daily':
+        return {
+          id: 'daily',
+          name: 'DAILY-Bot',
+          title: 'Daily Productivity Specialist',
+          primary: '#10b981',     // Emerald Green
+          secondary: '#059669',
+          accent: '#6ee7b7',      // Mint highlight
+          dark: '#064e3b',
+          hair: '#fed7aa',        // Soft Chestnut hair
+          skin: '#ffe0bd',
+          glow: 'rgba(16, 185, 129, 0.6)'
+        };
       default:
         return {
           id: 'core',
@@ -130,7 +143,6 @@ class PixelSpriteEngine {
   }
 
   renderCharacterBody(ctx, p, walkFrame, isWalking, isWorking, offsetY, s, botId) {
-    // Coordinate helpers: 1 pixel block = (px * s, py * s, s, s)
     const px = (gridX, gridY, color, width = 1, height = 1) => {
       ctx.fillStyle = color;
       ctx.fillRect(gridX * s, (gridY + offsetY) * s, width * s, height * s);
@@ -166,21 +178,21 @@ class PixelSpriteEngine {
 
     // Bot specific gear on torso
     if (botId === 'uiux') {
-      // Stylus holster / cyan strap
       px(7, 11, '#ffffff', 1, 4);
       px(6, 15, '#00f3ff', 2, 1);
     } else if (botId === 'fe') {
-      // Dual-badge / dev logo
       px(8, 12, '#60a5fa', 4, 1);
       px(9, 14, '#fde047', 2, 2);
     } else if (botId === 'be') {
-      // Server keycard badge
       px(7, 12, '#f8fafc', 2, 3);
       px(8, 14, '#c084fc', 1, 1);
     } else if (botId === 'sec') {
-      // Tactical gold shield insignia
       px(9, 12, '#fbbf24', 2, 2);
       px(10, 13, '#ef4444', 1, 1);
+    } else if (botId === 'daily') {
+      // Daily planner green badge & pen pocket
+      px(7, 11, '#6ee7b7', 2, 2);
+      px(10, 12, '#ffffff', 1, 3);
     }
 
     // 3. ARMS & HANDS
@@ -190,7 +202,6 @@ class PixelSpriteEngine {
       armL_Y += (walkFrame === 1 ? -1 : (walkFrame === 3 ? 1 : 0));
       armR_Y += (walkFrame === 1 ? 1 : (walkFrame === 3 ? -1 : 0));
     } else if (isWorking) {
-      // Hands typing forward
       armL_Y -= 1;
       armR_Y += 1;
     }
@@ -206,11 +217,14 @@ class PixelSpriteEngine {
       px(15, armR_Y + 4, '#00f3ff', 1, 3); // Cyan digital stylus
     } else if (botId === 'sec') {
       px(15, armR_Y + 4, '#f59e0b', 2, 2); // Golden token key
+    } else if (botId === 'daily') {
+      px(15, armR_Y + 3, '#10b981', 3, 4); // Daily agenda planner notebook
+      px(16, armR_Y + 4, '#ffffff', 1, 2);
     }
 
     // 4. HEAD & FACE
-    px(6, 4, p.skin, 8, 6); // Head base
-    px(5, 5, p.skin, 10, 4); // Cheeks
+    px(6, 4, p.skin, 8, 6);
+    px(5, 5, p.skin, 10, 4);
 
     // Hair
     px(5, 2, p.hair, 10, 3);
@@ -220,31 +234,30 @@ class PixelSpriteEngine {
 
     // Bot specific headwear / visors
     if (botId === 'uiux') {
-      // Cyan Cyber Visor
       px(7, 5, '#00f3ff', 7, 2);
-      px(8, 5, '#ffffff', 2, 1); // Visor reflection
+      px(8, 5, '#ffffff', 2, 1);
     } else if (botId === 'fe') {
-      // Cyber Headset with mic
       px(4, 4, '#1d4ed8', 2, 3);
       px(14, 4, '#1d4ed8', 2, 3);
-      px(6, 2, '#3b82f6', 8, 1); // Headband
-      px(12, 7, '#60a5fa', 2, 1); // Mic boom
-      // Pixel Eyes
+      px(6, 2, '#3b82f6', 8, 1);
+      px(12, 7, '#60a5fa', 2, 1);
       px(8, 6, '#1e293b', 1, 2);
       px(11, 6, '#1e293b', 1, 2);
     } else if (botId === 'be') {
-      // Deep Purple Cyber Hood
       px(5, 2, '#581c87', 10, 2);
       px(4, 3, '#581c87', 2, 5);
       px(14, 3, '#581c87', 2, 5);
-      // Glowing purple cyber eye
       px(8, 6, '#c084fc', 2, 1);
       px(12, 6, '#7e22ce', 1, 1);
     } else if (botId === 'sec') {
-      // Red tactical radar eye-lens
       px(7, 5, '#ef4444', 3, 2);
-      px(8, 5, '#fde047', 1, 1); // Amber target crosshair
+      px(8, 5, '#fde047', 1, 1);
       px(12, 6, '#111827', 1, 2);
+    } else if (botId === 'daily') {
+      // Smart green focus glasses
+      px(6, 5, '#10b981', 8, 2);
+      px(7, 5, '#ffffff', 2, 1);
+      px(11, 5, '#ffffff', 2, 1);
     }
 
     // Smile / mouth
@@ -261,7 +274,6 @@ class PixelSpriteEngine {
     ctx.font = '9px "Press Start 2P", "Courier New", monospace';
     const textWidth = ctx.measureText(text).width;
     const padX = 10;
-    const padY = 7;
     const boxW = Math.max(80, textWidth + padX * 2);
     const boxH = 24;
     const boxX = Math.round(x + 12 * s - boxW / 2);
@@ -271,8 +283,8 @@ class PixelSpriteEngine {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
     ctx.fillRect(boxX + 3, boxY + 3, boxW, boxH);
 
-    // Bubble Body (Pixel border)
-    ctx.fillStyle = '#0f172a'; // Deep retro dark slate
+    // Bubble Body
+    ctx.fillStyle = '#0f172a';
     ctx.fillRect(boxX, boxY, boxW, boxH);
 
     // Border with Agent primary color
@@ -280,7 +292,7 @@ class PixelSpriteEngine {
     ctx.lineWidth = 2;
     ctx.strokeRect(boxX, boxY, boxW, boxH);
 
-    // Corner pixel accents
+    // Corner accents
     ctx.fillStyle = p.accent;
     ctx.fillRect(boxX, boxY, 2, 2);
     ctx.fillRect(boxX + boxW - 2, boxY, 2, 2);

@@ -1,5 +1,5 @@
 // 2D Pixel Art & Retro Isometric Studio Engine for MOONCRUST // PIXEL AI STUDIO
-// Interactive Canvas simulator with click-to-move, waypoint pings, and autonomous agents
+// Interactive Canvas simulator with 5 Specialist Sub-Agents
 
 class PixelStudioEngine {
   constructor(canvasId) {
@@ -12,18 +12,19 @@ class PixelStudioEngine {
     this.frameTick = 0;
     this.isRunning = true;
     this.speed = 1;
-    this.selectedAgentId = 'uiux'; // Default selected
+    this.selectedAgentId = 'daily'; // Default to the new Daily bot or uiux
 
     // Visual FX pools
     this.steamParticles = [];
     this.stars = [];
-    this.waypoints = []; // Click-to-move visual pings
+    this.waypoints = [];
     this.initStars();
 
-    // Workstation locations
+    // 5 Specialized Workstations
     this.stations = {
       uiux: { x: 120, y: 220, name: 'UI/UX Design Station', icon: '🎨' },
       fe: { x: 140, y: 380, name: 'Frontend Dev Rig', icon: '💻' },
+      daily: { x: 440, y: 380, name: 'Daily Productivity Hub', icon: '📅' },
       be: { x: 740, y: 220, name: 'Backend & Server Console', icon: '🗄️' },
       sec: { x: 720, y: 380, name: 'SecOps & CTF Radar Lab', icon: '🛡️' },
       coffee: { x: 440, y: 155, name: 'Caffeine Fuel Hub', icon: '☕' },
@@ -31,21 +32,21 @@ class PixelStudioEngine {
       serverRack: { x: 860, y: 155, name: 'Mainframe Cluster', icon: '🖥️' }
     };
 
-    // Initialize 4 Autonomous Specialist Agents
+    // Initialize 5 Autonomous Specialist Agents
     this.agents = [
       {
         id: 'uiux',
         name: 'UI/UX-Bot',
         role: 'Lead UI/UX Architect',
-        desc: 'Specialist in User Flows, Wireframes, Design Tokens & Heuristic UX.',
+        desc: 'Specialist in User Flows, Wireframes, Design Tokens & Heuristic Usability.',
         x: this.stations.uiux.x,
         y: this.stations.uiux.y,
         targetX: this.stations.uiux.x,
         targetY: this.stations.uiux.y,
-        state: 'WORKING', // WORKING, IDLE, WALKING
+        state: 'WORKING',
         dir: 1,
         stationId: 'uiux',
-        isSelected: true,
+        isSelected: false,
         stats: { tasksCompleted: 42, efficiency: '99.4%', focus: 'Design Tokens', status: 'Active' },
         bubble: { text: 'Crafting design tokens...', timer: 120 },
         nextActionTick: 180
@@ -54,7 +55,7 @@ class PixelStudioEngine {
         id: 'fe',
         name: 'FE-Bot',
         role: 'Frontend Engineer',
-        desc: 'Specialist in HTML5/CSS3/Tailwind, Responsive UI & Micro-interactions.',
+        desc: 'Specialist in HTML5/CSS3/Tailwind, Responsive Layouts & Interactive Animation.',
         x: this.stations.fe.x,
         y: this.stations.fe.y,
         targetX: this.stations.fe.x,
@@ -66,6 +67,23 @@ class PixelStudioEngine {
         stats: { tasksCompleted: 58, efficiency: '98.8%', focus: 'Interactive UI', status: 'Active' },
         bubble: { text: 'Compiling Tailwind CSS...', timer: 140 },
         nextActionTick: 240
+      },
+      {
+        id: 'daily',
+        name: 'DAILY-Bot',
+        role: 'Daily Productivity Specialist',
+        desc: 'Asisten Aktivitas Harian: To-Do List, Manajemen Jadwal Kuliah/Kerja, Pomodoro Timer & Habit Tracker.',
+        x: this.stations.daily.x,
+        y: this.stations.daily.y,
+        targetX: this.stations.daily.x,
+        targetY: this.stations.daily.y,
+        state: 'WORKING',
+        dir: 1,
+        stationId: 'daily',
+        isSelected: true,
+        stats: { tasksCompleted: 85, efficiency: '99.8%', focus: 'Daily Routine & Focus', status: 'Active' },
+        bubble: { text: 'Menata jadwal fokus hari ini 📅', timer: 140 },
+        nextActionTick: 160
       },
       {
         id: 'be',
@@ -103,10 +121,7 @@ class PixelStudioEngine {
       }
     ];
 
-    // Mouse click event listener
     this.canvas.addEventListener('click', (e) => this.handleClick(e));
-
-    // Start main game loop
     this.loop = this.loop.bind(this);
     requestAnimationFrame(this.loop);
   }
@@ -136,7 +151,6 @@ class PixelStudioEngine {
   update() {
     this.frameTick++;
 
-    // Update coffee steam particles
     if (this.frameTick % 6 === 0) {
       this.steamParticles.push({
         x: this.stations.coffee.x + 18 + (Math.random() * 6 - 3),
@@ -159,7 +173,6 @@ class PixelStudioEngine {
       }
     }
 
-    // Update Waypoint Pings
     for (let i = this.waypoints.length - 1; i >= 0; i--) {
       const wp = this.waypoints[i];
       wp.life--;
@@ -169,9 +182,7 @@ class PixelStudioEngine {
       }
     }
 
-    // Autonomous behavior update for each agent (if not locked by pipeline)
     this.agents.forEach(agent => {
-      // Decrement speech bubble timer
       if (agent.bubble) {
         agent.bubble.timer--;
         if (agent.bubble.timer <= 0) {
@@ -179,7 +190,6 @@ class PixelStudioEngine {
         }
       }
 
-      // Movement logic toward target
       const dx = agent.targetX - agent.x;
       const dy = agent.targetY - agent.y;
       const dist = Math.hypot(dx, dy);
@@ -191,11 +201,9 @@ class PixelStudioEngine {
         agent.x += (dx / dist) * moveSpeed;
         agent.y += (dy / dist) * moveSpeed;
       } else {
-        // Arrived at target
         agent.x = agent.targetX;
         agent.y = agent.targetY;
         if (agent.state === 'WALKING') {
-          // If returned to personal station, switch to working
           const homeStation = this.stations[agent.stationId];
           if (Math.hypot(agent.x - homeStation.x, agent.y - homeStation.y) < 8) {
             agent.state = 'WORKING';
@@ -205,7 +213,6 @@ class PixelStudioEngine {
         }
       }
 
-      // Autonomous idle wandering (when pipeline isn't controlling them)
       if (!window.pipelineEngine || !window.pipelineEngine.isActive) {
         if (this.frameTick >= agent.nextActionTick) {
           this.decideNextAutonomousAction(agent);
@@ -215,10 +222,8 @@ class PixelStudioEngine {
   }
 
   decideNextAutonomousAction(agent) {
-    // Schedule next decision in 260-440 ticks (4.5 to 7.5 seconds)
     agent.nextActionTick = this.frameTick + 260 + Math.floor(Math.random() * 180);
 
-    // If currently away from home station, head back home
     const homeStation = this.stations[agent.stationId];
     const isAtHome = Math.hypot(agent.x - homeStation.x, agent.y - homeStation.y) < 10;
 
@@ -228,6 +233,7 @@ class PixelStudioEngine {
       const returnQuotes = {
         uiux: 'Kembali merapikan wireframe!',
         fe: 'Lanjut nulis komponen UI...',
+        daily: 'Lanjut susun to-do list & Pomodoro ⏱️',
         be: 'Memeriksa endpoint API...',
         sec: 'Lanjut radar sweep & CTF!'
       };
@@ -235,7 +241,6 @@ class PixelStudioEngine {
       return;
     }
 
-    // Agent is at home, pick a random leisure / collaboration action
     const actions = ['coffee', 'whiteboard', 'serverRack', 'visitPeer', 'stayWorking'];
     const choice = actions[Math.floor(Math.random() * actions.length)];
 
@@ -243,19 +248,18 @@ class PixelStudioEngine {
       agent.targetX = this.stations.coffee.x + (Math.random() * 20 - 10);
       agent.targetY = this.stations.coffee.y + 20;
       this.triggerAgentBubble(agent.id, 'Ambil kopi espresso dulu ☕', 120);
-      this.logTerminal(`[${agent.name}] Istirahat sejenak ke mesin kopi.`);
+      this.logTerminal(`[${agent.name}] Mengambil espresso segar di Caffeine Hub.`);
     } else if (choice === 'whiteboard') {
       agent.targetX = this.stations.whiteboard.x + (Math.random() * 30 - 15);
       agent.targetY = this.stations.whiteboard.y + 25;
-      this.triggerAgentBubble(agent.id, 'Cek backlog tugas di papan 📋', 120);
-      this.logTerminal(`[${agent.name}] Meninjau sprint board di Whiteboard.`);
+      this.triggerAgentBubble(agent.id, 'Cek sprint task di papan 📋', 120);
+      this.logTerminal(`[${agent.name}] Meninjau papan tugas Agile.`);
     } else if (choice === 'serverRack' && (agent.id === 'be' || agent.id === 'sec')) {
       agent.targetX = this.stations.serverRack.x - 20;
       agent.targetY = this.stations.serverRack.y + 20;
-      this.triggerAgentBubble(agent.id, 'Cek status load server 🖥️', 120);
-      this.logTerminal(`[${agent.name}] Memeriksa suhu & koneksi mainframe server.`);
+      this.triggerAgentBubble(agent.id, 'Cek server cluster 🖥️', 120);
+      this.logTerminal(`[${agent.name}] Memeriksa status mainframe server.`);
     } else if (choice === 'visitPeer') {
-      // Pick another agent to chat with
       const otherAgents = this.agents.filter(a => a.id !== agent.id);
       const peer = otherAgents[Math.floor(Math.random() * otherAgents.length)];
       agent.targetX = peer.x + (agent.x < peer.x ? -35 : 35);
@@ -264,17 +268,18 @@ class PixelStudioEngine {
       const chatDialogues = {
         uiux: [`Halo ${peer.name}, user flow sudah sesuai?`, 'Token palet warna siap diintegrasikan!'],
         fe: [`Sinkronisasi komponen Tailwind dengan ${peer.name}`, 'Ukuran bundle teroptimasi < 30KB!'],
+        daily: [`Hey ${peer.name}, jangan lupa istirahat & minum air!`, 'Target to-do hari ini sudah masuk jadwal!'],
         be: [`Validasi skema database 100% lulus`, `Mengirim payload JWT auth ke ${peer.name}`],
         sec: [`Audit OWASP: 0 celah kritis ditemukan!`, `Simulasi decrypt payload CTF selesai.`]
       };
       const dialog = chatDialogues[agent.id][Math.floor(Math.random() * chatDialogues[agent.id].length)];
       this.triggerAgentBubble(agent.id, dialog, 140);
-      this.logTerminal(`[${agent.name}] Berdiskusi dengan [${peer.name}]: "${dialog}"`);
+      this.logTerminal(`[${agent.name}] Berbicara ke [${peer.name}]: "${dialog}"`);
     } else {
-      // Stay working and quote domain thought
       const workThoughts = {
         uiux: ['Figma tokens synced!', 'Cek kontras WCAG AA...', 'Merapikan touch target mobile'],
-        fe: ['Flexbox & Grid rapi sempurna', 'Menambahkan transisi CSS halus', 'Optimasi render DOM'],
+        fe: ['Flexbox rapi sempurna', 'Menambahkan transisi CSS halus', 'Optimasi render DOM'],
+        daily: ['Sesi Pomodoro berjalan lancar ⏱️', 'Prioritas: Vibe coding & Kuliah', 'Jadwal harian tertata rapi!'],
         be: ['Query database selesai: 1.4ms', 'REST API response 200 OK', 'JWT bearer token diperbarui'],
         sec: ['Checklist OWASP Top 10: CLEAR', 'Cipher decrypted: SHA-256 valid', 'Sanitasi input aktif']
       };
@@ -293,7 +298,6 @@ class PixelStudioEngine {
     }
   }
 
-  // Interactive Click on Canvas: Agent selection or Click-to-Move
   handleClick(e) {
     const rect = this.canvas.getBoundingClientRect();
     const scaleX = this.canvas.width / rect.width;
@@ -303,7 +307,6 @@ class PixelStudioEngine {
 
     if (window.studioAudio) window.studioAudio.init();
 
-    // Check if an agent was clicked directly
     let agentFound = false;
     this.agents.forEach(agent => {
       const dist = Math.hypot(clickX - (agent.x + 24), clickY - (agent.y + 26));
@@ -315,7 +318,6 @@ class PixelStudioEngine {
 
     if (agentFound) return;
 
-    // Check if a station was clicked directly
     let stationFound = false;
     for (const [key, station] of Object.entries(this.stations)) {
       const dist = Math.hypot(clickX - station.x, clickY - station.y);
@@ -323,7 +325,6 @@ class PixelStudioEngine {
         stationFound = true;
         this.showStationInfo(key);
 
-        // If an agent is selected, send that agent to the clicked station!
         if (this.selectedAgentId) {
           const selected = this.agents.find(a => a.id === this.selectedAgentId);
           if (selected) {
@@ -339,16 +340,15 @@ class PixelStudioEngine {
 
     if (stationFound) return;
 
-    // Clicked on empty floor: CLICK-TO-MOVE for selected agent!
     if (clickY > 154 && this.selectedAgentId) {
       const selected = this.agents.find(a => a.id === this.selectedAgentId);
       if (selected) {
         selected.targetX = Math.round(clickX - 24);
         selected.targetY = Math.round(clickY - 26);
         this.waypoints.push({ x: clickX, y: clickY, radius: 4, life: 25, color: '#00f3ff' });
-        this.triggerAgentBubble(selected.id, 'Siap, bergerak ke titik lokasi! 📍', 100);
+        this.triggerAgentBubble(selected.id, 'Siap, melangkah ke titik tujuan! 📍', 100);
         if (window.studioAudio) window.studioAudio.playKey();
-        this.logTerminal(`[User Command] Menggerakkan [${selected.name}] ke koordinat (${Math.round(clickX)}, ${Math.round(clickY)}).`);
+        this.logTerminal(`[User Command] Mengarahkan [${selected.name}] ke (${Math.round(clickX)}, ${Math.round(clickY)}).`);
       }
     }
   }
@@ -363,20 +363,19 @@ class PixelStudioEngine {
       const greetings = {
         uiux: 'UI/UX-Bot siap! Mau dirancang wireframe atau design system apa?',
         fe: 'FE-Bot online! Komponen HTML5 & Tailwind siap dirakit.',
+        daily: 'DAILY-Bot hadir! Yuk susun to-do list, jadwal kuliah, atau mulai Pomodoro focus timer!',
         be: 'BE-Bot aktif! Skema SQL, REST API & auth siap dieksekusi.',
         sec: 'SEC-Bot siaga! Siap audit celah OWASP & uji tantangan CTF.'
       };
       this.triggerAgentBubble(agent.id, greetings[agent.id] || 'Agen siap bekerja!', 140);
-      this.logTerminal(`[Select] [${agent.name}] dipilih. Siap menerima instruksi langsung.`);
+      this.logTerminal(`[Select] [${agent.name}] dipilih. Role aktif.`);
 
-      // Update Inspector UI in HTML HUD
       if (window.updateInspectorCard) {
         window.updateInspectorCard(agent);
       }
     }
   }
 
-  // Direct manual actions for selected agent
   commandSelectedAgent(action) {
     if (!this.selectedAgentId) return;
     const agent = this.agents.find(a => a.id === this.selectedAgentId);
@@ -407,8 +406,8 @@ class PixelStudioEngine {
     } else if (action === 'chat') {
       const thoughts = [
         'Semua arsitektur siap diuji coba secara riil!',
-        'Efisiensi kerja tim saat ini stabil di 99.6%.',
-        'Ketik topik apa saja di kolom perintah untuk menyuruh kami kerja!'
+        'Gunakan tab per role jika kamu ingin fokus ngerjain modul sendiri!',
+        'DAILY-Bot siap bantu kamu menata to-do harian dan timer Pomodoro.'
       ];
       const t = thoughts[Math.floor(Math.random() * thoughts.length)];
       this.triggerAgentBubble(agent.id, t, 140);
@@ -421,11 +420,12 @@ class PixelStudioEngine {
     const s = this.stations[stationKey];
     if (!s) return;
     const tips = {
-      coffee: 'Caffeine Fuel Hub: Tempat ngopi santai agen sebelum sprint kode intensif.',
-      whiteboard: 'Agile Whiteboard: Papan pemetaan arsitektur, user flow, dan sprint status.',
+      coffee: 'Caffeine Fuel Hub: Tempat ngopi santai agen sebelum sprint intensif.',
+      whiteboard: 'Agile Whiteboard: Papan pemetaan to-do, arsitektur, dan sprint roadmap.',
       serverRack: 'Mainframe Cluster: 8 server blade redundan, pendingin aktif, uptime 99.99%.',
       uiux: 'Meja UI/UX: Dilengkapi Drawing Tablet layar sentuh, palet warna, dan wireframe mockup.',
       fe: 'Rig Frontend: Dual monitor 4K, keyboard mekanikal RGB, preview live layout.',
+      daily: 'Hub Produktivitas Harian: Kalender digital, to-do notepad, checklist kebiasaan, dan jam Pomodoro.',
       be: 'Konsol Backend: Terminal Linux, monitor skema ERD PostgreSQL, dan pipeline API.',
       sec: 'Lab SecOps: Radar aktif 360°, monitor matrix hijau, shield verifikasi celah OWASP.'
     };
@@ -448,47 +448,27 @@ class PixelStudioEngine {
     }
   }
 
-  // ==========================================
-  // RENDER PIPELINE: ROOM, OBJECTS, LIGHTING
-  // ==========================================
   render() {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
 
-    // 1. BACK WALL & CYBER BACKGROUND
     this.renderBackWall(ctx);
-
-    // 2. OBSERVATION WINDOW (MOON & STARS)
     this.renderObservationWindow(ctx);
-
-    // 3. NEON SIGN "MOONCRUST"
     this.renderNeonSign(ctx);
-
-    // 4. CHECKERED FLOOR
     this.renderCheckeredFloor(ctx);
-
-    // 5. STATIC INTERIOR FURNITURE (Background layer)
     this.renderWhiteboard(ctx);
     this.renderServerRack(ctx);
     this.renderCoffeeCorner(ctx);
     this.renderPixelPlants(ctx);
-
-    // 6. WORKSTATIONS (DESKS & GEAR)
     this.renderWorkstations(ctx);
-
-    // 7. WAYPOINT CLICK PINGS
     this.renderWaypoints(ctx);
 
-    // 8. AUTONOMOUS AGENTS (SORTED BY Y FOR DEPTH)
     const sortedAgents = [...this.agents].sort((a, b) => a.y - b.y);
     sortedAgents.forEach(agent => {
       window.pixelSprites.drawAgent(ctx, agent, this.frameTick);
     });
 
-    // 9. COFFEE STEAM PARTICLES
     this.renderCoffeeSteam(ctx);
-
-    // 10. AMBIENT SCANLINE & VIGNETTE EFFECT
     this.renderVignette(ctx);
   }
 
@@ -797,9 +777,15 @@ class PixelStudioEngine {
   }
 
   renderWorkstations(ctx) {
+    // 1. UI/UX Workstation (Top-Left)
     this.drawUIUXStation(ctx, this.stations.uiux.x - 30, this.stations.uiux.y - 30);
+    // 2. FE Workstation (Bottom-Left)
     this.drawFEStation(ctx, this.stations.fe.x - 30, this.stations.fe.y - 30);
+    // 3. DAILY Workstation (Bottom-Center)
+    this.drawDAILYStation(ctx, this.stations.daily.x - 35, this.stations.daily.y - 30);
+    // 4. BE Workstation (Top-Right)
     this.drawBEStation(ctx, this.stations.be.x - 40, this.stations.be.y - 30);
+    // 5. SEC Workstation (Bottom-Right)
     this.drawSECStation(ctx, this.stations.sec.x - 40, this.stations.sec.y - 30);
   }
 
@@ -886,6 +872,58 @@ class PixelStudioEngine {
     ctx.fillRect(x + 78, y + 32, 14, 10);
     ctx.fillStyle = '#3b82f6';
     ctx.fillRect(x + 83, y + 34, 4, 6);
+  }
+
+  // DAILY Productivity Station: Calendar flip clock, planner notepad, warm desk lamp
+  drawDAILYStation(ctx, x, y) {
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(x, y + 20, 110, 42);
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(x, y + 18, 110, 4);
+    ctx.fillStyle = '#10b981';
+    ctx.fillRect(x, y + 22, 110, 2); // Emerald LED trim
+
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(x + 6, y + 62, 6, 26);
+    ctx.fillRect(x + 98, y + 62, 6, 26);
+
+    // Desktop Digital Calendar & Clock
+    ctx.fillStyle = '#090d16';
+    ctx.fillRect(x + 12, y - 8, 38, 26);
+    ctx.fillStyle = '#022c22';
+    ctx.fillRect(x + 14, y - 6, 34, 22);
+    // Digital clock text / date
+    ctx.fillStyle = '#34d399';
+    ctx.fillRect(x + 18, y - 2, 12, 4); // HH:MM
+    ctx.fillRect(x + 34, y - 2, 10, 4);
+    ctx.fillStyle = '#6ee7b7';
+    ctx.fillRect(x + 18, y + 6, 26, 3); // "DAILY OK"
+
+    // To-Do Notepad with checkboxes
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(x + 58, y + 26, 24, 18);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(x + 60, y + 28, 20, 1);
+    ctx.fillStyle = '#10b981';
+    ctx.fillRect(x + 61, y + 31, 3, 3); // Checked box
+    ctx.fillRect(x + 61, y + 36, 3, 3);
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(x + 66, y + 32, 12, 2);
+    ctx.fillRect(x + 66, y + 37, 10, 2);
+
+    // Warm Desk Lamp
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(x + 88, y + 16, 4, 16);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(x + 84, y + 12, 12, 5);
+    // Warm light cone on desk
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
+    ctx.beginPath();
+    ctx.moveTo(x + 84, y + 17);
+    ctx.lineTo(x + 72, y + 42);
+    ctx.lineTo(x + 104, y + 42);
+    ctx.closePath();
+    ctx.fill();
   }
 
   drawBEStation(ctx, x, y) {
@@ -1009,7 +1047,6 @@ class PixelStudioEngine {
   }
 }
 
-// Global initialization
 window.addEventListener('DOMContentLoaded', () => {
   window.pixelStudio = new PixelStudioEngine('studioCanvas');
 });

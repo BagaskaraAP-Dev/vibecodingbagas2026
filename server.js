@@ -15,18 +15,19 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Health & Status API
+// Health & Status API (5 Sub-Agents)
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     service: 'MOONCRUST // PIXEL AI STUDIO & COMMAND CENTER',
-    version: '2.0.0',
+    version: '2.6.0',
     uptimeSeconds: Math.floor((Date.now() - START_TIME) / 1000),
     agents: [
-      { id: 'uiux', name: 'UI/UX-Bot', status: 'active', station: 'Drawing Tablet' },
-      { id: 'fe', name: 'FE-Bot', status: 'active', station: 'Dual Monitors' },
-      { id: 'be', name: 'BE-Bot', status: 'active', station: 'Server Console' },
-      { id: 'sec', name: 'SEC-Bot', status: 'active', station: 'Radar & Terminal' }
+      { id: 'uiux', name: 'UI/UX-Bot', role: 'UI/UX Architect', status: 'active', station: 'Drawing Tablet' },
+      { id: 'fe', name: 'FE-Bot', role: 'Frontend Engineer', status: 'active', station: 'Dual Monitors' },
+      { id: 'daily', name: 'DAILY-Bot', role: 'Daily Productivity Specialist', status: 'active', station: 'Daily Productivity Hub' },
+      { id: 'be', name: 'BE-Bot', role: 'Backend Architect', status: 'active', station: 'Server Console' },
+      { id: 'sec', name: 'SEC-Bot', role: 'SecOps & CTF Solver', status: 'active', station: 'Radar & Terminal' }
     ],
     timestamp: new Date().toISOString()
   });
@@ -39,9 +40,9 @@ app.post('/api/pipeline/run', (req, res) => {
   res.json({
     success: true,
     taskId,
-    topic: topic || 'Default Autonomous Sprint',
-    status: 'dispatched_to_agents',
-    stages: ['uiux', 'fe', 'be', 'sec'],
+    topic: topic || 'Autonomous Full-Stack Sprint',
+    status: 'dispatched_to_5_agents',
+    stages: ['uiux', 'fe', 'daily', 'be', 'sec'],
     dispatchedAt: new Date().toISOString()
   });
 });
@@ -57,7 +58,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`\n======================================================`);
     console.log(`  🚀 MOONCRUST // PIXEL AI STUDIO & COMMAND CENTER`);
     console.log(`  🔗 Local Access: http://localhost:${PORT}`);
-    console.log(`  🎮 2D Pixel Canvas & 4 Sub-Agents Ready`);
+    console.log(`  🎮 5 Autonomous Specialist Sub-Agents Ready`);
     console.log(`======================================================\n`);
   });
 }
