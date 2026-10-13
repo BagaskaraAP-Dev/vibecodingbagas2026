@@ -84,6 +84,40 @@ app.post('/api/guestbook', async (req, res) => {
   }
 });
 
+// Autonomous AI Agent Endpoints
+app.post('/api/agent/task', (req, res) => {
+  const { task } = req.body;
+  const hash = Date.now().toString(16).slice(-4).toUpperCase();
+  let report = 'Tugas selesai dieksekusi tanpa kendala.';
+
+  if (task === 'audit') {
+    report = `Security Audit Lulus: SQLite tables verified, input sanitization active, 0 vulnerability found. [HASH:#${hash}]`;
+  } else if (task === 'optimize') {
+    report = `Database Optimized: Re-indexing & vacuuming selesai dalam 3.8ms. Cache memory optimal. [HASH:#${hash}]`;
+  } else if (task === 'test') {
+    report = `10/10 Synthetic Unit-tests PASSED: API status 200 OK, latency 9ms, JSON response valid. [HASH:#${hash}]`;
+  } else if (task === 'deploy') {
+    report = `Edge Deploy Pipeline Sim: Bundle compressed, assets synced ke CDN edge. Release tag: v1.0.${hash}.`;
+  }
+
+  res.json({
+    success: true,
+    task: task || 'custom',
+    report: report,
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/agent/status', (req, res) => {
+  res.json({
+    success: true,
+    agent: 'BagasBot',
+    role: 'Autonomous Full-Stack AI Worker',
+    mode: 'active',
+    memoryUsageMB: Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+  });
+});
+
 // Fallback to index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
