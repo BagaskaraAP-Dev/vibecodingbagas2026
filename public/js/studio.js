@@ -30,7 +30,7 @@ class PixelStudioEngine {
       coffee: { x: 440, y: 155, name: 'Caffeine Fuel Hub', icon: '☕' },
       whiteboard: { x: 260, y: 155, name: 'Agile Whiteboard', icon: '📋' },
       serverRack: { x: 860, y: 155, name: 'Mainframe Cluster', icon: '🖥️' },
-      admin: { x: 330, y: 190, name: 'MOONCRUST Admin Post', icon: '👑' }
+      admin: { x: 360, y: 210, name: 'MOONCRUST Admin Desk', icon: '👑' }
     };
 
     // Initialize 5 Autonomous Specialist Agents
@@ -124,12 +124,12 @@ class PixelStudioEngine {
         id: 'admin',
         name: 'ADMIN',
         role: 'MOONCRUST Studio Admin',
-        desc: 'Mengawasi kelima agen dari pos MOONCRUST. Tidak berpindah tempat.',
+        desc: 'Bekerja di meja admin dekat papan tulis sambil memantau kelima agen. Tidak berpindah tempat.',
         x: this.stations.admin.x,
         y: this.stations.admin.y,
         targetX: this.stations.admin.x,
         targetY: this.stations.admin.y,
-        state: 'IDLE',
+        state: 'WORKING',
         dir: 1,
         stationId: 'admin',
         fixed: true,
@@ -372,7 +372,7 @@ class PixelStudioEngine {
     const agent = this.agents.find(a => a.id === this.selectedAgentId);
     if (!agent) return;
     if (agent.fixed) {
-      this.triggerAgentBubble(agent.id, 'Admin tetap berjaga di pos MOONCRUST.', 120);
+      this.triggerAgentBubble(agent.id, 'Admin tetap kerja di meja admin.', 120);
       return;
     }
 
@@ -423,7 +423,7 @@ class PixelStudioEngine {
       daily: 'Hub Produktivitas Harian: Kalender digital, to-do notepad, checklist kebiasaan, dan jam Pomodoro.',
       be: 'Konsol Backend: Terminal Linux, monitor skema ERD PostgreSQL, dan pipeline API.',
       sec: 'Lab SecOps: Radar aktif 360°, monitor matrix hijau, shield verifikasi celah OWASP.',
-      admin: 'Pos Admin MOONCRUST: memantau semua workstation dari bawah papan neon.'
+      admin: 'Meja Admin MOONCRUST: monitor status 5 agen dan log aktivitas studio.'
     };
     const tipText = tips[stationKey] || s.name;
     const banner = document.getElementById('liveStatusTicker');
@@ -554,8 +554,9 @@ class PixelStudioEngine {
 
   renderNeonSign(ctx) {
     const text = 'MOONCRUST';
-    const x = 480;
-    const y = 138;
+    // centered above the whiteboard (wbX 210, wbW 105)
+    const x = 262;
+    const y = 58;
 
     ctx.save();
     ctx.textAlign = 'center';
@@ -574,7 +575,7 @@ class PixelStudioEngine {
 
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#1e293b';
-    ctx.fillRect(x - 95, y + 4, 190, 2);
+    ctx.fillRect(x - 72, y + 4, 144, 2);
 
     ctx.restore();
   }
@@ -792,29 +793,51 @@ class PixelStudioEngine {
     this.drawBEStation(ctx, this.stations.be.x - 40, this.stations.be.y - 30);
     // 5. SEC Workstation (Bottom-Right)
     this.drawSECStation(ctx, this.stations.sec.x - 40, this.stations.sec.y - 30);
-    // 6. Admin post under the MOONCRUST sign
-    this.drawAdminPost(ctx, this.stations.admin.x);
+    // 6. Admin desk next to the whiteboard
+    this.drawAdminStation(ctx, this.stations.admin.x - 30, this.stations.admin.y - 30);
   }
 
-  drawAdminPost(ctx, x) {
-    // Wall-mounted monitoring screen above the admin, between the whiteboard and the MOONCRUST sign
-    const mx = x - 6;
-    const my = 116;
+  drawAdminStation(ctx, x, y) {
+    // Desk with gold trim
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(x, y + 20, 115, 42);
     ctx.fillStyle = '#334155';
-    ctx.fillRect(mx + 27, my + 28, 6, 8); // wall bracket
+    ctx.fillRect(x, y + 18, 115, 4);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(x, y + 22, 115, 2);
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(mx, my, 60, 30);
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(mx + 0.5, my + 0.5, 59, 29);
-    // one status light per workstation, slow scan line
+    ctx.fillRect(x + 6, y + 62, 6, 26);
+    ctx.fillRect(x + 103, y + 62, 6, 26);
+
+    // Monitor 1: one status light per agent with a slow scan line
+    ctx.fillStyle = '#090d16';
+    ctx.fillRect(x + 12, y - 10, 46, 28);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(x + 14, y - 8, 42, 24);
     this.agents.filter(a => !a.fixed).forEach((a, i) => {
       ctx.fillStyle = window.pixelSprites.getPalette(a.id).primary;
-      ctx.fillRect(mx + 6 + i * 10, my + 8, 6, 6);
+      ctx.fillRect(x + 17 + i * 8, y - 4, 5, 5);
     });
     ctx.fillStyle = 'rgba(0, 243, 255, 0.35)';
-    ctx.fillRect(mx + 3, my + 18 + (Math.floor(this.frameTick / 20) % 8), 54, 1);
+    ctx.fillRect(x + 15, y + 4 + (Math.floor(this.frameTick / 20) % 10), 40, 1);
+
+    // Monitor 2: scrolling admin log
+    ctx.fillStyle = '#090d16';
+    ctx.fillRect(x + 62, y - 10, 42, 28);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(x + 64, y - 8, 38, 24);
+    for (let l = 0; l < 4; l++) {
+      ctx.fillStyle = (l + Math.floor(this.frameTick / 40)) % 4 === 0 ? '#f59e0b' : '#4ade80';
+      ctx.fillRect(x + 67, y - 5 + l * 5, 14 + ((l * 7 + Math.floor(this.frameTick / 40)) % 18), 2);
+    }
+
+    // Keyboard
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(x + 38, y + 30, 36, 10);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(x + 40, y + 32, 32, 6);
   }
+
 
 
   drawUIUXStation(ctx, x, y) {

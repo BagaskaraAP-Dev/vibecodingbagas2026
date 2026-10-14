@@ -239,13 +239,6 @@ class PixelSpriteEngine {
       px(16, armR_Y + 4, '#ffffff', 1, 2);
     }
 
-    if (botId === 'admin') {
-      // Open laptop held in front of the chest, screen glowing
-      px(5, 15, '#94a3b8', 10, 2); // keyboard base resting on both hands
-      px(6, 11, '#334155', 8, 4);  // lid
-      px(7, 12, '#00f3ff', 6, 2);  // screen glow
-      px(8, 12, '#ffffff', 1, 1);
-    }
 
     // 4. HEAD & FACE
     px(6, 4, p.skin, 8, 6);
