@@ -42,7 +42,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// DAILY-Bot AI agent (Claude)
+// DAILY-Bot AI agent (Gemini)
 app.post('/api/agent', (req, res) => agentHttpHandler(req, res));
 
 // Pipeline Trigger API

@@ -37,21 +37,22 @@ Aplikasi web Mission Control Dashboard bergaya **2D Pixel Art & Retro Isometric 
 
 ---
 
-## 🤖 DAILY-Bot AI (Claude)
+## 🤖 DAILY-Bot AI (Gemini)
 
-Panel **CHAT DAILY-BOT** memakai Claude (`claude-opus-5-5`) lewat endpoint `POST /api/agent`. Bot bisa menambah, mencentang, dan menghapus to-do, menyusun jadwal hari ini, dan memulai Pomodoro. API key hanya ada di server, tidak pernah dikirim ke browser.
+Panel **CHAT DAILY-BOT** memakai Gemini API (default `gemini-3.8-flash`, free tier) lewat endpoint `POST /api/agent`. Bot bisa menambah, mencentang, dan menghapus to-do, menyusun jadwal hari ini, dan memulai Pomodoro. API key hanya ada di server, tidak pernah dikirim ke browser.
 
-Environment variable yang dibutuhkan:
+Environment variable:
 
 | Variable | Isi |
 |---|---|
-| `ANTHROPIC_API_KEY` | API key dari console.anthropic.com |
-| `AGENT_ACCESS_CODE` | Kode bebas buatanmu sendiri; diminta di browser lewat tombol 🔑 supaya orang lain tidak bisa memakai kuota API-mu |
+| `GEMINI_API_KEY` | API key dari Google AI Studio (aistudio.google.com → Get API key) |
+| `AGENT_ACCESS_CODE` | Kode bebas buatanmu sendiri; diminta di browser lewat tombol 🔑 supaya orang lain tidak bisa menghabiskan kuota API-mu |
+| `GEMINI_MODEL` | Opsional, untuk mengganti model (default `gemini-3.8-flash`) |
 
-- **Lokal:** tambahkan kedua baris itu ke `.env.local`, lalu jalankan `npm run dev`.
-- **Vercel:** `vercel env add ANTHROPIC_API_KEY production` dan `vercel env add AGENT_ACCESS_CODE production`, lalu deploy ulang.
+- **Lokal:** tambahkan baris-baris itu ke `.env.local`, lalu jalankan `npm run dev`.
+- **Vercel:** `vercel env add GEMINI_API_KEY production` dan `vercel env add AGENT_ACCESS_CODE production`, lalu deploy ulang.
 
-Batas pemakaian: 30 request per 10 menit per IP (per instance server). Pasang juga spend limit di Anthropic Console.
+Batas pemakaian: 30 request per 10 menit per IP (per instance server), ditambah kuota free tier Gemini.
 
 ## 🛠️ Menjalankan Secara Lokal
 

@@ -2,16 +2,28 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runDailyAgent, validateAgentRequest, agentHttpHandler, AgentInputError } from '../lib/dailyAgent.js';
 
-function fakeClient(responses) {
-  const calls = [];
+// Minimal stand-in for GoogleGenAI: each scripted turn is { calls: [...] } or { text } or { blocked }.
+function fakeClient(turns) {
+  const requests = [];
   return {
-    calls,
-    beta: { messages: { create: async params => { calls.push(structuredClone(params)); return responses.shift(); } } }
+    requests,
+    models: {
+      generateContent: async params => {
+        requests.push(structuredClone(params));
+        const turn = turns.shift();
+        if (turn.blocked) return { promptFeedback: { blockReason: 'SAFETY' }, candidates: [] };
+        const parts = turn.calls
+          ? turn.calls.map((c, i) => ({ functionCall: { id: `c${requests.length}-${i}`, ...c }, thoughtSignature: `sig-${requests.length}-${i}` }))
+          : [{ text: turn.text }];
+        return {
+          candidates: [{ content: { role: 'model', parts }, finishReason: 'STOP' }],
+          functionCalls: turn.calls ? parts.map(p => p.functionCall) : undefined,
+          text: turn.text
+        };
+      }
+    }
   };
 }
-
-const toolUse = (id, name, input) => ({ type: 'tool_use', id, name, input });
-const text = t => ({ type: 'text', text: t });
 
 const baseInput = () => validateAgentRequest({
   message: 'tambah tugas laporan, centang olahraga, mulai fokus',
@@ -20,15 +32,15 @@ const baseInput = () => validateAgentRequest({
   localTime: 'Rabu, 14 Oktober 2026 17.00 Asia/Jakarta'
 });
 
-test('agent loop executes tools against request state and returns final text', async () => {
+test('agent loop executes function calls against request state and returns final text', async () => {
   const client = fakeClient([
-    { stop_reason: 'tool_use', content: [
-      toolUse('t1', 'add_task', { text: 'Laporan praktikum', priority: 'HIGH' }),
-      toolUse('t2', 'set_task_done', { id: 1, done: true }),
-      toolUse('t3', 'start_pomodoro', {})
+    { calls: [
+      { name: 'add_task', args: { text: 'Laporan praktikum', priority: 'HIGH' } },
+      { name: 'set_task_done', args: { id: 1, done: true } },
+      { name: 'start_pomodoro', args: {} }
     ] },
-    { stop_reason: 'tool_use', content: [toolUse('t4', 'set_schedule', { blocks: [{ time: '19:00 - 20:00', task: 'Laporan' }] })] },
-    { stop_reason: 'end_turn', content: [text('Sudah, semangat!')] }
+    { calls: [{ name: 'set_schedule', args: { blocks: [{ time: '19:00 - 20:00', task: 'Laporan' }] } }] },
+    { text: 'Sudah, semangat!' }
   ]);
 
   const out = await runDailyAgent(baseInput(), { client });
@@ -41,34 +53,37 @@ test('agent loop executes tools against request state and returns final text', a
   assert.deepEqual(out.schedule, [{ time: '19:00 - 20:00', task: 'Laporan' }]);
   assert.deepEqual(out.actions, ['start_pomodoro']);
 
-  const [first, second, third] = client.calls;
-  assert.equal(first.model, 'claude-opus-5-5');
-  assert.equal(first.fallbacks, 'default');
-  assert.deepEqual(first.betas, ['server-side-fallback-2026-07-01']);
-  assert.equal(first.tool_choice, undefined);
-  assert.ok(first.tools.every(t => t.strict === true && t.input_schema.additionalProperties === false));
-  // append-only: each request extends the previous one without rewriting earlier messages
-  assert.deepEqual(second.messages.slice(0, first.messages.length), first.messages);
-  assert.deepEqual(third.messages.slice(0, second.messages.length), second.messages);
-  assert.deepEqual(first.system, second.system);
-  // all tool results for one assistant turn go back in a single user message
-  assert.equal(second.messages.at(-1).content.length, 3);
+  const [first, second, third] = client.requests;
+  assert.equal(first.contents[0].role, 'user');
+  assert.equal(first.contents[1].role, 'model');
+  assert.ok(first.config.tools[0].functionDeclarations.some(d => d.name === 'add_task'));
+  // append-only, and the model turn is replayed unchanged (thought signatures preserved)
+  assert.deepEqual(second.contents.slice(0, first.contents.length), first.contents);
+  assert.deepEqual(third.contents.slice(0, second.contents.length), second.contents);
+  assert.equal(second.contents.at(-2).parts[0].thoughtSignature, 'sig-1-0');
+  // all function responses for one model turn go back in a single user turn, matched by id
+  const responses = second.contents.at(-1).parts.map(p => p.functionResponse);
+  assert.deepEqual(responses.map(r => r.id), ['c1-0', 'c1-1', 'c1-2']);
 });
 
-test('unknown task id comes back as an error tool_result instead of throwing', async () => {
+test('invalid function args and unknown ids come back as errors instead of throwing', async () => {
   const client = fakeClient([
-    { stop_reason: 'tool_use', content: [toolUse('t1', 'delete_task', { id: 999 })] },
-    { stop_reason: 'end_turn', content: [text('Tugasnya tidak ketemu.')] }
+    { calls: [
+      { name: 'delete_task', args: { id: 999 } },
+      { name: 'add_task', args: { text: 'x', priority: 'URGENT' } },
+      { name: 'set_task_done', args: { id: 1, done: 'yes' } }
+    ] },
+    { text: 'Ada yang gagal.' }
   ]);
   const out = await runDailyAgent(baseInput(), { client });
-  const result = client.calls[1].messages.at(-1).content[0];
-  assert.equal(result.is_error, true);
+  const responses = client.requests[1].contents.at(-1).parts.map(p => p.functionResponse.response);
+  assert.ok(responses.every(r => r.error));
   assert.equal(out.tasks.length, 1);
+  assert.equal(out.tasks[0].done, false);
 });
 
-test('refusal is surfaced as a friendly reply', async () => {
-  const client = fakeClient([{ stop_reason: 'refusal', content: [] }]);
-  const out = await runDailyAgent(baseInput(), { client });
+test('blocked prompt is surfaced as a friendly reply', async () => {
+  const out = await runDailyAgent(baseInput(), { client: fakeClient([{ blocked: true }]) });
   assert.match(out.reply, /tidak bisa/);
 });
 
@@ -102,8 +117,7 @@ test('HTTP handler: fails closed, checks access code, validates body', async () 
     assert.equal(res.statusCode, 400);
 
     res = fakeRes();
-    const client = fakeClient([{ stop_reason: 'end_turn', content: [text('ok')] }]);
-    await agentHttpHandler({ method: 'POST', headers: { 'x-access-code': 'rahasia-123', 'x-forwarded-for': '10.0.0.2' }, body: { message: 'hai' } }, res, { client });
+    await agentHttpHandler({ method: 'POST', headers: { 'x-access-code': 'rahasia-123', 'x-forwarded-for': '10.0.0.2' }, body: { message: 'hai' } }, res, { client: fakeClient([{ text: 'ok' }]) });
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.reply, 'ok');
   } finally {
