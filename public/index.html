@@ -3,60 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MOONCRUST // PIXEL AI STUDIO & COMMAND CENTER</title>
-  <meta name="description" content="Mission Control Dashboard with 5 Autonomous Specialist Sub-Agents simulating 2D Pixel Art tech studio room, automated engineering pipeline, and daily productivity assistant.">
+  <title>MOONCRUST // PIXEL AI STUDIO</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 </head>
 <body>
 
-  <!-- Top Navigation / Mission Control Bar -->
+  <!-- Minimal Header -->
   <header class="studio-header">
     <div class="brand-wrapper">
       <div class="brand-logo-pixel">MC</div>
       <div>
         <h1 class="brand-title">MOONCRUST // <span>PIXEL AI STUDIO</span></h1>
-        <div class="brand-subtitle">MISSION CONTROL DASHBOARD & 5 AUTONOMOUS SPECIALIST SUB-AGENTS</div>
+        <div class="brand-subtitle">5 SPECIALIST AI SUB-AGENTS (UI/UX, FE, DAILY, BE, SEC)</div>
       </div>
     </div>
 
     <div class="header-status-group">
-      <div class="status-pill">
-        <span class="indicator-dot"></span>
-        <span id="systemStatusText">5/5 AGENTS ONLINE</span>
-      </div>
-      <button id="toggleAudioBtn" class="btn-header" onclick="toggleAudio()">
-        🔊 AUDIO: ON
-      </button>
-      <button class="btn-header" onclick="resetStudioPositions()">
-        🔄 RESET POSISI
-      </button>
+      <button id="toggleAudioBtn" class="btn-header" onclick="toggleAudio()">🔊 AUDIO: ON</button>
+      <button class="btn-header" onclick="resetStudioPositions()">🔄 RESET POSISI</button>
     </div>
   </header>
 
-  <!-- Main Content Layout -->
+  <!-- Main Workspace -->
   <main class="main-wrapper">
 
-    <!-- 1. Panduan Cepat (Cara Menyuruh Agen Kerja) -->
-    <section class="guide-card">
-      <div class="guide-title">
-        <span>💡</span> PANDUAN PENGGUNAAN: CARA MENYURUH 5 AGENT BEKERJA
-      </div>
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; line-height:1.5;">
-        <div><strong>1. Mode Berantai (5-Agent Pipeline):</strong> Ketik topik proyek apa saja di kotak input bawah, lalu klik <code>🚀 LAUNCH AUTO-PIPELINE</code>. Seluruh 5 bot akan bekerja berurutan.</div>
-        <div><strong>2. Suruh Agen Tertentu (Solo):</strong> Ingin fokus ke Frontend, Backend, UI/UX, Security, atau Aktivitas Harian? Klik tombol <code>Suruh [Nama-Bot]</code>.</div>
-        <div><strong>3. Khusus DAILY-Bot:</strong> Gunakan untuk menata to-do list harian kuliah/kerja, jalankan <strong>Pomodoro Focus Timer 25 menit</strong>, dan habit tracker!</div>
-        <div><strong>4. Gerakkan Manual:</strong> Klik agen di kanvas lalu klik lantai mana pun untuk menyuruhnya berjalan ke titik tersebut (*Click-to-Move*).</div>
-      </div>
-    </section>
-
-    <!-- 2. 2D Pixel Art Studio Room (HTML5 Canvas) -->
+    <!-- 2D Pixel Studio Canvas -->
     <section class="studio-canvas-card">
-      <div class="canvas-toolbar">
-        <div>📍 SIMULASI 2D PIXEL ISOMETRIK (960x540) — 5 WORKSTATIONS KHUSUS</div>
-        <div>STASIUN: <span style="color:#00f3ff">● CYAN</span> <span style="color:#3b82f6">● BLUE</span> <span style="color:#10b981">● GREEN (DAILY)</span> <span style="color:#a855f7">● PURPLE</span> <span style="color:#ef4444">● RED</span></div>
-      </div>
-
       <div class="canvas-viewport">
         <canvas id="studioCanvas" width="960" height="540"></canvas>
       </div>
@@ -66,277 +39,175 @@
         <span style="font-family: var(--font-pixel); font-size: 8px; color: var(--text-muted); margin-right: 4px;">PILIH AGEN:</span>
         <div class="agent-chip" data-bot="uiux" onclick="window.pixelStudio.selectAgent('uiux')">
           <span class="chip-dot" style="background:#00f3ff"></span>
-          <span>[UI/UX-Bot] Drawing Tablet</span>
+          <span>[UI/UX]</span>
         </div>
         <div class="agent-chip" data-bot="fe" onclick="window.pixelStudio.selectAgent('fe')">
           <span class="chip-dot" style="background:#3b82f6"></span>
-          <span>[FE-Bot] Dual Monitors</span>
+          <span>[Frontend]</span>
         </div>
         <div class="agent-chip active" data-bot="daily" onclick="window.pixelStudio.selectAgent('daily')">
           <span class="chip-dot" style="background:#10b981"></span>
-          <span>[DAILY-Bot] Daily & Pomodoro</span>
+          <span>[Daily Assistant]</span>
         </div>
         <div class="agent-chip" data-bot="be" onclick="window.pixelStudio.selectAgent('be')">
           <span class="chip-dot" style="background:#a855f7"></span>
-          <span>[BE-Bot] Server Console</span>
+          <span>[Backend]</span>
         </div>
         <div class="agent-chip" data-bot="sec" onclick="window.pixelStudio.selectAgent('sec')">
           <span class="chip-dot" style="background:#ef4444"></span>
-          <span>[SEC-Bot] Radar & Terminal</span>
+          <span>[Cyber Security]</span>
         </div>
       </div>
 
-      <!-- Live Running Ticker -->
-      <div class="ticker-bar">
-        <span class="ticker-icon">▶ STATUS:</span>
-        <div id="liveStatusTicker" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-          Studio room aktif. 5 Sub-Agents siaga di workstation masing-masing.
-        </div>
-      </div>
-
-      <!-- Terminal Real-Time Activity Log -->
-      <div class="terminal-log-panel">
-        <div class="terminal-log-header">
-          <span>📟 MISSION CONTROL REAL-TIME LOG</span>
-          <button onclick="document.getElementById('terminalLogBody').innerHTML = '';" class="btn-pixel-small" style="padding:2px 6px;">BERSIHKAN LOG</button>
-        </div>
-        <div id="terminalLogBody" class="terminal-log-body">
+      <!-- Live Terminal Log -->
+      <div class="terminal-log-panel" style="margin-top:0; border-top:1px solid #1e293b; border-radius:0;">
+        <div id="terminalLogBody" class="terminal-log-body" style="height:65px;">
           <div class="terminal-log-row">
-            <span class="log-time">[BOOT]</span>
-            <span class="log-content">Mooncrust Pixel Studio Kernel v2.6.0 online. 5 sub-agents (UI/UX, FE, DAILY, BE, SEC) siap beroperasi.</span>
+            <span class="log-time">[SISTEM]</span>
+            <span class="log-content">5 AI Sub-Agent siaga. Masukkan perintah tugas di bawah atau kelola aktivitas harianmu.</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 3. Mission Control Deck & Auto-Pipeline Launcher -->
+    <!-- Pusat Komando Tugas (Input Bersih & Cepat) -->
     <section class="control-deck">
       <div class="deck-title-row">
-        <div class="deck-title">
-          <span>⚡</span> PUSAT KOMANDO TUGAS & WORKBENCH SPESIALIS
-        </div>
-        <div id="pipelineBadge" class="pipeline-badge">
-          IDLE / SIAP MENERIMA PERINTAH
-        </div>
+        <div class="deck-title"><span>⚡</span> INPUT PERINTAH TUGAS</div>
+        <div id="pipelineBadge" class="pipeline-badge">SIAP MENERIMA PERINTAH</div>
       </div>
 
-      <!-- Input Form -->
       <div class="input-container">
         <input 
           type="text" 
           id="taskTopicInput" 
           class="task-input-field" 
-          placeholder="Ketik topik tugas atau aktivitas harian (contoh: Jadwal Kuliah & Vibe Coding, Booking Futsal, Portal Kampus)..."
+          placeholder="Ketik tugas di sini (contoh: Jadwal Kuliah & Belajar Coding, Sistem Login, Booking Futsal)..."
           value="Jadwal Kuliah, Belajar Coding Vibe, & Target Olahraga Harian"
         >
         <button id="launchPipelineBtn" class="btn-launch" onclick="launchTaskPipeline()">
-          <span>🚀</span> LAUNCH AUTO-PIPELINE (5-AGEN)
+          <span>🚀</span> JALANKAN TIM (5-AGENT)
         </button>
       </div>
 
-      <!-- Quick Preset Buttons -->
-      <div class="presets-group">
-        <span class="presets-label">PILIHAN PRESET:</span>
-        <button class="preset-chip" onclick="applyPreset('dailyRoutine')">
-          📅 Rutinitas & Jadwal Harian
-        </button>
-        <button class="preset-chip" onclick="applyPreset('futsal')">
-          ⚽ Booking Lapangan Futsal
-        </button>
-        <button class="preset-chip" onclick="applyPreset('campus')">
-          🎓 Portal Akademik Kampus
-        </button>
-        <button class="preset-chip" onclick="applyPreset('ecommerce')">
-          🛒 E-Commerce Checkout
-        </button>
-        <button class="preset-chip" onclick="applyPreset('ctf')">
-          🚩 CTF Crypto & SQLi Lab
-        </button>
-      </div>
-
-      <!-- Solo Agent Direct Dispatch -->
+      <!-- Solo Commands -->
       <div class="solo-dispatch-group">
-        <span class="presets-label">SURUH AGEN SOLO:</span>
-        <button class="btn-solo" onclick="launchSoloAgent('uiux')">🎨 Suruh UI/UX-Bot</button>
-        <button class="btn-solo" onclick="launchSoloAgent('fe')">💻 Suruh FE-Bot</button>
-        <button class="btn-solo" style="color:#34d399; border-color:#059669;" onclick="launchSoloAgent('daily')">📅 Suruh DAILY-Bot</button>
-        <button class="btn-solo" onclick="launchSoloAgent('be')">🗄️ Suruh BE-Bot</button>
-        <button class="btn-solo" onclick="launchSoloAgent('sec')">🛡️ Suruh SEC-Bot</button>
+        <span class="presets-label">PERINTAH SOLO:</span>
+        <button class="btn-solo" style="color:#34d399; border-color:#059669; font-weight:bold;" onclick="launchSoloAgent('daily')">📅 Suruh Daily-Bot</button>
+        <button class="btn-solo" onclick="launchSoloAgent('fe')">💻 Suruh Frontend</button>
+        <button class="btn-solo" onclick="launchSoloAgent('be')">🗄️ Suruh Backend</button>
+        <button class="btn-solo" onclick="launchSoloAgent('uiux')">🎨 Suruh UI/UX</button>
+        <button class="btn-solo" onclick="launchSoloAgent('sec')">🛡️ Suruh Security</button>
       </div>
 
-      <!-- Stage Stepper Visualizer (5 Stages) -->
-      <div class="stage-stepper">
+      <!-- Stage Stepper Visualizer -->
+      <div class="stage-stepper" style="margin-top:4px;">
         <div class="progress-track">
           <div id="pipelineProgressFill" class="progress-fill"></div>
         </div>
-
-        <div class="stages-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+        <div class="stages-grid" style="grid-template-columns: repeat(5, 1fr);">
           <div class="stage-node" data-step="1">
             <div class="node-icon">🎨</div>
-            <div class="node-title">1. UI/UX-BOT</div>
-            <div class="node-sub">User Flows</div>
+            <div class="node-title">UI/UX</div>
           </div>
           <div class="stage-node" data-step="2">
             <div class="node-icon">💻</div>
-            <div class="node-title">2. FE-BOT</div>
-            <div class="node-sub">HTML/Tailwind</div>
+            <div class="node-title">FRONTEND</div>
           </div>
           <div class="stage-node" data-step="3">
             <div class="node-icon">📅</div>
-            <div class="node-title">3. DAILY-BOT</div>
-            <div class="node-sub">Schedule & Tasks</div>
+            <div class="node-title">DAILY</div>
           </div>
           <div class="stage-node" data-step="4">
             <div class="node-icon">🗄️</div>
-            <div class="node-title">4. BE-BOT</div>
-            <div class="node-sub">SQL Schema & API</div>
+            <div class="node-title">BACKEND</div>
           </div>
           <div class="stage-node" data-step="5">
             <div class="node-icon">🛡️</div>
-            <div class="node-title">5. SEC-BOT</div>
-            <div class="node-sub">OWASP & CTF</div>
+            <div class="node-title">SECURITY</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 4. Inspector Card & Direct Action Buttons -->
-    <section id="inspectorSection" class="inspector-card">
-      <div class="inspector-header">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span id="inspectBadge" style="width:12px; height:12px; background:#10b981; border-radius:2px; display:inline-block;"></span>
-          <span id="inspectName" class="inspector-agent-name">DAILY-Bot (Daily Productivity Specialist)</span>
+    <!-- Kontrol Agen Terpilih (Sederhana & Praktis) -->
+    <section id="inspectorSection" class="inspector-card" style="padding:10px 14px;">
+      <div class="flex-between">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span id="inspectBadge" style="width:10px; height:10px; background:#10b981; border-radius:2px; display:inline-block;"></span>
+          <strong id="inspectName" style="font-family:var(--font-pixel); font-size:10px; color:#fff">DAILY-Bot</strong>
+          <span id="inspectStation" style="font-size:11px; color:#38bdf8">(Hub Produktivitas)</span>
         </div>
-        <span id="inspectStatus" class="status-mitigated">AKTIF & SIAGA</span>
-      </div>
-      <div id="inspectDesc" class="inspector-meta">
-        Asisten Aktivitas Harian: To-Do List, Manajemen Jadwal Kuliah/Kerja, Pomodoro Timer 25 Menit & Habit Tracker.
-      </div>
-      <div style="display:flex; gap:15px; flex-wrap:wrap; font-size:12px; color:var(--text-muted); border-top:1px solid #1e293b; padding-top:8px;">
-        <div>Tugas Selesai: <strong id="inspectTasks" style="color:#fff">85</strong></div>
-        <div>Efisiensi: <strong id="inspectEff" style="color:#34d399">99.8%</strong></div>
-        <div>Stasiun Kerja: <strong id="inspectStation" style="color:#34d399">Daily Productivity Hub</strong></div>
-        <div>Pemikiran Terakhir: <em id="inspectThought" style="color:#fde047">"Menata jadwal fokus hari ini 📅"</em></div>
-      </div>
-
-      <!-- Action Buttons to Control Selected Agent -->
-      <div class="inspector-actions-row">
-        <span style="font-family:var(--font-pixel); font-size:8px; color:var(--text-muted);">PERINTAH KONTROL:</span>
-        <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('work')">
-          💻 Mulai Bekerja
-        </button>
-        <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('coffee')">
-          ☕ Ambil Kopi
-        </button>
-        <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('whiteboard')">
-          📋 Papan Tulis
-        </button>
-        <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('server')">
-          🖥️ Cek Server
-        </button>
-        <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('chat')">
-          💬 Tanya Status
-        </button>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('work')">💻 Kerja</button>
+          <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('coffee')">☕ Kopi</button>
+          <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('whiteboard')">📋 Papan</button>
+          <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('server')">🖥️ Server</button>
+        </div>
       </div>
     </section>
 
-    <!-- 5. Deliverables Output Panel with Tabs -->
+    <!-- Lembar Kerja / Output Per Role -->
     <section class="deliverable-card">
       <div class="tabs-header">
-        <button class="tab-btn" onclick="switchTab('uiux')">
-          <span>🎨</span> UI/UX Specs
+        <button class="tab-btn active" onclick="switchTab('daily')">
+          <span>📅</span> Daily Tasks & Pomodoro
         </button>
         <button class="tab-btn" onclick="switchTab('fe')">
-          <span>💻</span> Frontend Code
-        </button>
-        <button class="tab-btn active" onclick="switchTab('daily')">
-          <span>📅</span> Daily Productivity & Pomodoro
+          <span>💻</span> Frontend
         </button>
         <button class="tab-btn" onclick="switchTab('be')">
-          <span>🗄️</span> Backend Schema & API
+          <span>🗄️</span> Backend
+        </button>
+        <button class="tab-btn" onclick="switchTab('uiux')">
+          <span>🎨</span> UI/UX
         </button>
         <button class="tab-btn" onclick="switchTab('sec')">
-          <span>🛡️</span> Security & CTF Audit
+          <span>🛡️</span> Security & CTF
         </button>
         <button class="tab-btn" onclick="switchTab('summary')">
-          <span>📋</span> Mission Summary
+          <span>📥</span> Export File
         </button>
       </div>
 
-      <!-- Tab 1: UI/UX -->
-      <div id="tabContent-uiux" class="tab-panel">
-        <div class="deliverable-header">
-          <span class="deliverable-badge bg-cyan">UI/UX-Bot (Cyan Station)</span>
-          <span class="deliverable-time">Standby</span>
-        </div>
-        <h3 class="deliverable-title text-cyan">🎨 UI/UX Architecture & Design System Specification</h3>
-        <p class="text-muted">Jalankan pipeline di atas untuk melihat UI/UX-Bot merancang wireframe, user flow, dan design system tokens.</p>
-      </div>
-
-      <!-- Tab 2: Frontend -->
-      <div id="tabContent-fe" class="tab-panel">
-        <div class="deliverable-header">
-          <span class="deliverable-badge bg-blue">FE-Bot (Blue Station)</span>
-          <span class="deliverable-time">Standby</span>
-        </div>
-        <h3 class="deliverable-title text-blue">💻 Responsive Frontend Component & Interactive Code</h3>
-        <p class="text-muted">FE-Bot akan menyusun kode komponen HTML5/Tailwind yang siap dicopy dan preview langsung.</p>
-      </div>
-
-      <!-- Tab 3: Daily (NEW!) -->
+      <!-- Tab: Daily -->
       <div id="tabContent-daily" class="tab-panel active">
-        <div class="deliverable-header">
-          <span class="deliverable-badge bg-green">DAILY-Bot (Emerald Station)</span>
-          <span class="deliverable-time">Siap Digunakan</span>
-        </div>
-        <h3 class="deliverable-title text-green">📅 Daily Productivity, Interactive To-Do List & Pomodoro Timer</h3>
-        <p class="text-muted">DAILY-Bot siap membantu rutinitas harianmu: mengatur waktu kuliah, belajar coding, to-do list, dan sesi Pomodoro fokus!</p>
+        <!-- Rendered dynamically -->
       </div>
 
-      <!-- Tab 4: Backend -->
+      <!-- Tab: Frontend -->
+      <div id="tabContent-fe" class="tab-panel">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Tab: Backend -->
       <div id="tabContent-be" class="tab-panel">
-        <div class="deliverable-header">
-          <span class="deliverable-badge bg-purple">BE-Bot (Purple Station)</span>
-          <span class="deliverable-time">Standby</span>
-        </div>
-        <h3 class="deliverable-title text-purple">🗄️ Relational SQL Schema & RESTful API Architecture</h3>
-        <p class="text-muted">BE-Bot akan merancang skema SQL DDL, indexing, serta kontroler REST API Express.js.</p>
+        <!-- Rendered dynamically -->
       </div>
 
-      <!-- Tab 5: Security -->
+      <!-- Tab: UI/UX -->
+      <div id="tabContent-uiux" class="tab-panel">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Tab: Security -->
       <div id="tabContent-sec" class="tab-panel">
-        <div class="deliverable-header">
-          <span class="deliverable-badge bg-red">SEC-Bot (Red/Gold Station)</span>
-          <span class="deliverable-time">Standby</span>
-        </div>
-        <h3 class="deliverable-title text-red">🛡️ Cyber Security Penetration Audit & CTF Challenge Lab</h3>
-        <p class="text-muted">SEC-Bot akan memindai celah OWASP Top 10, membuat tantangan CTF dan flag, serta patch hardening.</p>
+        <!-- Rendered dynamically -->
       </div>
 
-      <!-- Tab 6: Summary -->
+      <!-- Tab: Summary -->
       <div id="tabContent-summary" class="tab-panel">
-        <div class="deliverable-header">
-          <span class="deliverable-badge bg-green">MISSION SUMMARY</span>
-          <span class="deliverable-time">Ready</span>
-        </div>
-        <h3 class="deliverable-title text-green">🚀 Full Project Deliverables Overview (5 Sub-Agents)</h3>
-        <p class="text-muted">Hasil akhir komprehensif dari seluruh sub-agent dapat diunduh di sini.</p>
+        <!-- Rendered dynamically -->
       </div>
     </section>
 
   </main>
 
-  <!-- Footer -->
-  <footer class="studio-footer">
-    <div>
-      <strong>MOONCRUST // PIXEL AI STUDIO</strong> &copy; 2026. Built with HTML5 Canvas, Web Audio API & 5 Autonomous Multi-Agents.
-    </div>
-    <div>
-      Status: <span style="color:#10b981">Operational (5/5 Online)</span> | Engine: <span style="color:#00f3ff">Mooncrust 2D Pixel Kernel</span>
-    </div>
+  <footer class="studio-footer" style="padding:10px 16px;">
+    <div><strong>MOONCRUST // PIXEL AI STUDIO</strong> &copy; 2026. Minimalist Mission Control.</div>
+    <div>Status: <span style="color:#10b981">5/5 Agents Ready</span></div>
   </footer>
 
-  <!-- Scripts -->
   <script src="js/audio.js"></script>
   <script src="js/sprites.js"></script>
   <script src="js/studio.js"></script>
@@ -347,10 +218,7 @@
       if (window.studioAudio) {
         const isMuted = window.studioAudio.toggleMute();
         const btn = document.getElementById('toggleAudioBtn');
-        if (btn) {
-          btn.textContent = isMuted ? '🔇 AUDIO: MUTED' : '🔊 AUDIO: ON';
-          btn.style.color = isMuted ? '#ef4444' : '#f3f4f6';
-        }
+        if (btn) btn.textContent = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
       }
     }
 
@@ -364,43 +232,27 @@
           agent.state = 'WORKING';
         });
         if (window.studioAudio) window.studioAudio.playKey();
-        studio.showStationInfo('whiteboard');
-        studio.logTerminal('[System] Posisi seluruh agen dikembalikan ke stasiun masing-masing.');
-      }
-    }
-
-    function applyPreset(presetKey) {
-      if (window.pipelineEngine && window.pipelineEngine.presets[presetKey]) {
-        const input = document.getElementById('taskTopicInput');
-        if (input) {
-          input.value = window.pipelineEngine.presets[presetKey];
-          input.focus();
-        }
-        if (window.studioAudio) window.studioAudio.playKey();
+        studio.logTerminal('[System] Posisi agen direset ke meja masing-masing.');
       }
     }
 
     function launchTaskPipeline() {
       const input = document.getElementById('taskTopicInput');
-      const topic = input ? input.value : 'Jadwal Kuliah, Belajar Coding Vibe, & Target Olahraga Harian';
-      if (window.pipelineEngine) {
-        window.pipelineEngine.runPipeline(topic);
-      }
+      const topic = input ? input.value : 'Tugas Mandiri';
+      if (window.pipelineEngine) window.pipelineEngine.runPipeline(topic);
     }
 
     function launchSoloAgent(agentId) {
       const input = document.getElementById('taskTopicInput');
-      const topic = input ? input.value : 'Aktivitas Mandiri';
-      if (window.pipelineEngine) {
-        window.pipelineEngine.runSingleAgent(agentId, topic);
-      }
+      const topic = input ? input.value : 'Tugas Mandiri';
+      if (window.pipelineEngine) window.pipelineEngine.runSingleAgent(agentId, topic);
     }
 
     function switchTab(tabKey) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
 
-      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabKey));
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabKey));
       if (activeBtn) activeBtn.classList.add('active');
 
       const targetPanel = document.getElementById(`tabContent-${tabKey}`);
@@ -412,12 +264,8 @@
     window.updateInspectorCard = function(agent) {
       const palette = window.pixelSprites.getPalette(agent.id);
       document.getElementById('inspectBadge').style.background = palette.primary;
-      document.getElementById('inspectName').textContent = `${agent.name} (${palette.title})`;
-      document.getElementById('inspectDesc').textContent = agent.desc;
-      document.getElementById('inspectTasks').textContent = agent.stats.tasksCompleted;
-      document.getElementById('inspectEff').textContent = agent.stats.efficiency;
-      document.getElementById('inspectStation').textContent = window.pixelStudio.stations[agent.stationId].name;
-      document.getElementById('inspectThought').textContent = `"${agent.bubble ? agent.bubble.text : 'Memproses siklus instruksi selanjutnya...'}"`;
+      document.getElementById('inspectName').textContent = agent.name;
+      document.getElementById('inspectStation').textContent = `(${window.pixelStudio.stations[agent.stationId].name})`;
 
       document.querySelectorAll('.agent-chip').forEach(chip => {
         chip.classList.toggle('active', chip.dataset.bot === agent.id);
@@ -430,20 +278,20 @@
           const defaultTopic = 'Jadwal Kuliah, Belajar Coding Vibe, & Target Olahraga Harian';
           const domain = window.pipelineEngine.analyzeDomain(defaultTopic);
           window.pipelineEngine.currentTaskTopic = defaultTopic;
-          window.pipelineEngine.deliverables.uiux = window.pipelineEngine.generateUIUXDeliverable(defaultTopic, domain);
-          window.pipelineEngine.deliverables.fe = window.pipelineEngine.generateFEDeliverable(defaultTopic, domain);
-          window.pipelineEngine.deliverables.daily = window.pipelineEngine.generateDAILYDeliverable(defaultTopic, domain);
-          window.pipelineEngine.deliverables.be = window.pipelineEngine.generateBEDeliverable(defaultTopic, domain);
-          window.pipelineEngine.deliverables.sec = window.pipelineEngine.generateSECDeliverable(defaultTopic, domain);
+          window.pipelineEngine.deliverables.daily = window.pipelineEngine.generateDAILY(defaultTopic, domain);
+          window.pipelineEngine.deliverables.fe = window.pipelineEngine.generateFE(defaultTopic, domain);
+          window.pipelineEngine.deliverables.be = window.pipelineEngine.generateBE(defaultTopic, domain);
+          window.pipelineEngine.deliverables.uiux = window.pipelineEngine.generateUIUX(defaultTopic, domain);
+          window.pipelineEngine.deliverables.sec = window.pipelineEngine.generateSEC(defaultTopic, domain);
 
-          window.pipelineEngine.renderDeliverableTab('uiux');
-          window.pipelineEngine.renderDeliverableTab('fe');
           window.pipelineEngine.renderDeliverableTab('daily');
+          window.pipelineEngine.renderDeliverableTab('fe');
           window.pipelineEngine.renderDeliverableTab('be');
+          window.pipelineEngine.renderDeliverableTab('uiux');
           window.pipelineEngine.renderDeliverableTab('sec');
           window.pipelineEngine.renderDeliverableTab('summary');
         }
-      }, 500);
+      }, 300);
     });
   </script>
 </body>
