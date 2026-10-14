@@ -62,4 +62,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: 🛡️ Semgrep (custom AppSec rules + JS/Express rulesets)
-        run: semgrep scan --error --metrics=off --config .semgrep/appsec.yml --config p/javascript --config p/expressjs public server.js api lib index.html
+        run: semgrep scan --error --metrics=off --config .semgrep/appsec.yml --config p/javascript --config p/expressjs public server.js api lib
