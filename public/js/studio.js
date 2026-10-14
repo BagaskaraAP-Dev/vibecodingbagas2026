@@ -30,7 +30,7 @@ class PixelStudioEngine {
       coffee: { x: 440, y: 155, name: 'Caffeine Fuel Hub', icon: '☕' },
       whiteboard: { x: 260, y: 155, name: 'Agile Whiteboard', icon: '📋' },
       serverRack: { x: 860, y: 155, name: 'Mainframe Cluster', icon: '🖥️' },
-      admin: { x: 520, y: 192, name: 'MOONCRUST Admin Post', icon: '👑' }
+      admin: { x: 330, y: 190, name: 'MOONCRUST Admin Post', icon: '👑' }
     };
 
     // Initialize 5 Autonomous Specialist Agents
@@ -134,8 +134,8 @@ class PixelStudioEngine {
         stationId: 'admin',
         fixed: true,
         isSelected: false,
-        bubble: { text: 'Admin standby. Semua agen fokus kerja ✅', timer: 160 },
-        nextActionTick: 320
+        bubble: { text: 'Admin standby. Semua agen fokus kerja ✅', timer: 300 },
+        nextActionTick: 900
       }
     ];
 
@@ -240,16 +240,19 @@ class PixelStudioEngine {
   }
 
   decideNextAutonomousAction(agent) {
-    agent.nextActionTick = this.frameTick + 260 + Math.floor(Math.random() * 180);
+    // ~10-15s between bubbles at 60fps so the room stays calm and readable
+    agent.nextActionTick = this.frameTick + 600 + Math.floor(Math.random() * 300);
 
     if (agent.fixed) {
+      agent.nextActionTick = this.frameTick + 1000 + Math.floor(Math.random() * 400);
       const adminLines = [
         'Semua agen fokus kerja ✅',
         'Monitoring 5 workstation...',
         'Tidak ada yang keluyuran, mantap 👍',
-        'Butuh sesuatu? Chat DAILY-Bot di bawah.'
+        'Butuh sesuatu? Chat DAILY-Bot di bawah.',
+        'Cek monitor: 5/5 workstation online 🖥️'
       ];
-      this.triggerAgentBubble(agent.id, adminLines[Math.floor(Math.random() * adminLines.length)], 140);
+      this.triggerAgentBubble(agent.id, adminLines[Math.floor(Math.random() * adminLines.length)], 300);
       return;
     }
 
@@ -272,7 +275,7 @@ class PixelStudioEngine {
       sec: ['Checklist OWASP Top 10: CLEAR', 'Header keamanan aktif', 'Sanitasi input aktif']
     };
     const quote = workThoughts[agent.id][Math.floor(Math.random() * workThoughts[agent.id].length)];
-    this.triggerAgentBubble(agent.id, quote, 130);
+    this.triggerAgentBubble(agent.id, quote, 240);
   }
 
   triggerAgentBubble(agentId, text, duration = 120) {
@@ -790,23 +793,29 @@ class PixelStudioEngine {
     // 5. SEC Workstation (Bottom-Right)
     this.drawSECStation(ctx, this.stations.sec.x - 40, this.stations.sec.y - 30);
     // 6. Admin post under the MOONCRUST sign
-    this.drawAdminPost(ctx, this.stations.admin.x, this.stations.admin.y);
+    this.drawAdminPost(ctx, this.stations.admin.x);
   }
 
-  drawAdminPost(ctx, x, y) {
-    // Podium with a gold-trimmed monitor the admin watches over
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(x + 4, y + 48, 40, 14);
-    ctx.fillStyle = '#f59e0b';
-    ctx.fillRect(x + 4, y + 48, 40, 2);
+  drawAdminPost(ctx, x) {
+    // Wall-mounted monitoring screen above the admin, between the whiteboard and the MOONCRUST sign
+    const mx = x - 6;
+    const my = 116;
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(mx + 27, my + 28, 6, 8); // wall bracket
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(x + 44, y + 22, 22, 16);
-    ctx.fillStyle = (Math.floor(this.frameTick / 30) % 2) ? '#10b981' : '#00f3ff';
-    ctx.fillRect(x + 47, y + 25, 16, 10);
-    ctx.fillStyle = '#475569';
-    ctx.fillRect(x + 53, y + 38, 4, 12);
-    ctx.fillRect(x + 48, y + 50, 14, 3);
+    ctx.fillRect(mx, my, 60, 30);
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(mx + 0.5, my + 0.5, 59, 29);
+    // one status light per workstation, slow scan line
+    this.agents.filter(a => !a.fixed).forEach((a, i) => {
+      ctx.fillStyle = window.pixelSprites.getPalette(a.id).primary;
+      ctx.fillRect(mx + 6 + i * 10, my + 8, 6, 6);
+    });
+    ctx.fillStyle = 'rgba(0, 243, 255, 0.35)';
+    ctx.fillRect(mx + 3, my + 18 + (Math.floor(this.frameTick / 20) % 8), 54, 1);
   }
+
 
   drawUIUXStation(ctx, x, y) {
     ctx.fillStyle = '#1e293b';
