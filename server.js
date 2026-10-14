@@ -1,6 +1,8 @@
 import express from 'express';
-import cors from 'cors';
+import crypto from 'crypto';
+import fs from 'fs';
 import path from 'path';
+import { agentHttpHandler } from './lib/dailyAgent.js';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,9 +12,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const START_TIME = Date.now();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Security headers: single source of truth is vercel.json, applied here for local/Node runs
+const { headers: headerRules = [] } = JSON.parse(fs.readFileSync(path.join(__dirname, 'vercel.json'), 'utf8'));
+const SECURITY_HEADERS = headerRules.flatMap(rule => rule.headers);
+
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  for (const { key, value } of SECURITY_HEADERS) res.setHeader(key, value);
+  next();
+});
+app.use(express.json({ limit: '32kb', strict: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Health & Status API (5 Sub-Agents)
@@ -33,10 +42,16 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// DAILY-Bot AI agent (Claude)
+app.post('/api/agent', (req, res) => agentHttpHandler(req, res));
+
 // Pipeline Trigger API
 app.post('/api/pipeline/run', (req, res) => {
-  const { topic } = req.body;
-  const taskId = 'task_' + Date.now().toString(16);
+  const { topic } = req.body ?? {};
+  if (topic !== undefined && (typeof topic !== 'string' || topic.length > 200)) {
+    return res.status(400).json({ success: false, error: 'topic must be a string of at most 200 characters' });
+  }
+  const taskId = 'task_' + crypto.randomUUID();
   res.json({
     success: true,
     taskId,

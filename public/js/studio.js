@@ -432,7 +432,10 @@ class PixelStudioEngine {
     const tipText = tips[stationKey] || s.name;
     const banner = document.getElementById('liveStatusTicker');
     if (banner) {
-      banner.innerHTML = `<span style="color:#00f3ff;">[STASIUN]</span> ${tipText}`;
+      const tag = document.createElement('span');
+      tag.style.color = '#00f3ff';
+      tag.textContent = '[STASIUN]';
+      banner.replaceChildren(tag, ` ${tipText}`);
     }
   }
 
@@ -442,7 +445,13 @@ class PixelStudioEngine {
       const time = new Date().toLocaleTimeString();
       const div = document.createElement('div');
       div.className = 'terminal-log-row';
-      div.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-content">${msg}</span>`;
+      const timeEl = document.createElement('span');
+      timeEl.className = 'log-time';
+      timeEl.textContent = `[${time}]`;
+      const msgEl = document.createElement('span');
+      msgEl.className = 'log-content';
+      msgEl.textContent = msg;
+      div.append(timeEl, ' ', msgEl);
       logBody.appendChild(div);
       logBody.scrollTop = logBody.scrollHeight;
     }

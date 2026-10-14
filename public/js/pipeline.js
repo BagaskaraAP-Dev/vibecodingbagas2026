@@ -26,7 +26,12 @@ class StudioPipelineEngine {
   loadSavedTasks() {
     try {
       const saved = localStorage.getItem('mooncrust_daily_tasks');
-      if (saved) return JSON.parse(saved);
+      const parsed = saved ? JSON.parse(saved) : null;
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter(t => t && Number.isFinite(t.id) && typeof t.text === 'string')
+          .map(t => ({ id: t.id, text: t.text.slice(0, 200), done: t.done === true, priority: t.priority }));
+      }
     } catch (e) {}
     return [
       { id: 1, text: 'Belajar Vibe Coding & Review Kode', done: false, priority: 'HIGH' },
@@ -227,7 +232,7 @@ class StudioPipelineEngine {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
 
-    const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabKey));
+    const btn = document.querySelector(`.tab-btn[data-tab="${tabKey}"]`);
     if (btn) btn.classList.add('active');
 
     const panel = document.getElementById(`tabContent-${tabKey}`);
@@ -256,7 +261,7 @@ class StudioPipelineEngine {
     const code = `<!-- Component: ${domain.entity}-ui.html -->
 <div class="p-4 bg-slate-900 border border-cyan-500 rounded text-white font-mono">
   <div class="flex justify-between items-center pb-2 mb-3 border-b border-slate-700">
-    <h3 class="font-bold text-cyan-400">${topic}</h3>
+    <h3 class="font-bold text-cyan-400">${this.escapeHTML(topic)}</h3>
     <span class="text-xs px-2 py-0.5 bg-cyan-950 border border-cyan-700 rounded text-cyan-300">ONLINE</span>
   </div>
   <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
@@ -270,7 +275,7 @@ class StudioPipelineEngine {
     </div>
   </div>
   <div class="flex gap-2">
-    <button onclick="document.getElementById('feLatency').textContent = (Math.random()*3+3).toFixed(1)+' ms'; alert('Eksekusi berhasil!');" class="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs rounded">
+    <button type="button" class="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs rounded">
       EKSEKUSI
     </button>
   </div>
@@ -373,19 +378,19 @@ if __name__ == '__main__':
           </div>
           <div class="pomo-display" id="pomoDisplay">${this.formatPomoTime()}</div>
           <div class="pomo-controls">
-            <button onclick="window.pipelineEngine.startPomodoro()" class="btn-pomo btn-pomo-start">▶ MULAI FOKUS</button>
-            <button onclick="window.pipelineEngine.pausePomodoro()" class="btn-pomo">⏸ JEDA</button>
-            <button onclick="window.pipelineEngine.resetPomodoro()" class="btn-pomo">🔄 RESET</button>
+            <button data-action="pomo-start" class="btn-pomo btn-pomo-start">▶ MULAI FOKUS</button>
+            <button data-action="pomo-pause" class="btn-pomo">⏸ JEDA</button>
+            <button data-action="pomo-reset" class="btn-pomo">🔄 RESET</button>
           </div>
         </div>
 
         <!-- Real Working To-Do List -->
         <div class="deliverable-section">
           <div class="flex-between mb-2">
-            <h4 style="font-family:var(--font-pixel); font-size:9px;">📝 DAFTAR TUGAS HARIAN (${d.todayDate})</h4>
+            <h4 style="font-family:var(--font-pixel); font-size:9px;">📝 DAFTAR TUGAS HARIAN (${this.escapeHTML(d.todayDate)})</h4>
             <div style="display:flex; gap:6px;">
-              <input type="text" id="newDailyTaskInput" placeholder="Ketik tugas baru..." class="input-task-small" onkeydown="if(event.key==='Enter') window.pipelineEngine.addNewTask();">
-              <button onclick="window.pipelineEngine.addNewTask()" class="btn-pixel-small">+ TAMBAH</button>
+              <input type="text" id="newDailyTaskInput" placeholder="Ketik tugas baru..." class="input-task-small" maxlength="200">
+              <button data-action="add-task" class="btn-pixel-small">+ TAMBAH</button>
             </div>
           </div>
           <div id="dailyTodoListContainer" class="todo-list-wrapper">
@@ -401,7 +406,7 @@ if __name__ == '__main__':
               <tr><th>Jam</th><th>Aktivitas</th></tr>
             </thead>
             <tbody>
-              ${d.schedule.map(s => `<tr><td class="font-mono text-cyan" style="width:140px">${s.time}</td><td>${s.task}</td></tr>`).join('')}
+              ${d.schedule.map(s => `<tr><td class="font-mono text-cyan" style="width:140px">${this.escapeHTML(s.time)}</td><td>${this.escapeHTML(s.task)}</td></tr>`).join('')}
             </tbody>
           </table>
         </div>
@@ -411,24 +416,24 @@ if __name__ == '__main__':
       container.innerHTML = `
         <div class="flex-between mb-2">
           <h4 style="font-family:var(--font-pixel); font-size:9px;">KODE KOMPONEN (HTML & TAILWIND)</h4>
-          <button onclick="navigator.clipboard.writeText(window.pipelineEngine.deliverables.fe.codeSnippet); alert('Kode disalin!');" class="btn-pixel-small">📋 SALIN KODE</button>
+          <button data-action="copy" data-copy="fe" class="btn-pixel-small">📋 SALIN KODE</button>
         </div>
         <div class="code-box mb-3"><pre><code>${this.escapeHTML(d.codeSnippet)}</code></pre></div>
         <h4 style="font-family:var(--font-pixel); font-size:9px; margin-bottom:8px;">PREVIEW LANGSUNG:</h4>
-        <div class="live-preview-container border-blue">${d.codeSnippet.replace(/<script[\s\S]*?<\/script>/gi, '')}</div>
+        <div class="live-preview-container border-blue">${d.codeSnippet}</div>
       `;
     } else if (tabKey === 'be' && this.deliverables.be) {
       const d = this.deliverables.be;
       container.innerHTML = `
         <div class="flex-between mb-2">
           <h4 style="font-family:var(--font-pixel); font-size:9px;">SKEMA SQL (DDL)</h4>
-          <button onclick="navigator.clipboard.writeText(window.pipelineEngine.deliverables.be.sqlSchema); alert('SQL disalin!');" class="btn-pixel-small">📋 SALIN SQL</button>
+          <button data-action="copy" data-copy="sql" class="btn-pixel-small">📋 SALIN SQL</button>
         </div>
         <div class="code-box mb-4"><pre><code>${this.escapeHTML(d.sqlSchema)}</code></pre></div>
 
         <div class="flex-between mb-2">
           <h4 style="font-family:var(--font-pixel); font-size:9px;">KONTROLER REST API (EXPRESS.JS)</h4>
-          <button onclick="navigator.clipboard.writeText(window.pipelineEngine.deliverables.be.apiRoutes); alert('API disalin!');" class="btn-pixel-small">📋 SALIN API</button>
+          <button data-action="copy" data-copy="api" class="btn-pixel-small">📋 SALIN API</button>
         </div>
         <div class="code-box"><pre><code>${this.escapeHTML(d.apiRoutes)}</code></pre></div>
       `;
@@ -436,22 +441,22 @@ if __name__ == '__main__':
       const d = this.deliverables.uiux;
       container.innerHTML = `
         <h4 style="font-family:var(--font-pixel); font-size:9px; margin-bottom:8px;">WIREFRAME TATA LETAK</h4>
-        <div class="code-box terminal-box mb-3"><pre><code>${d.wireframe}</code></pre></div>
+        <div class="code-box terminal-box mb-3"><pre><code>${this.escapeHTML(d.wireframe)}</code></pre></div>
         <h4 style="font-family:var(--font-pixel); font-size:9px; margin-bottom:8px;">PALET WARNA TOKEN</h4>
-        <div class="code-box"><pre><code>${JSON.stringify(d.tokens, null, 2)}</code></pre></div>
+        <div class="code-box"><pre><code>${this.escapeHTML(JSON.stringify(d.tokens, null, 2))}</code></pre></div>
       `;
     } else if (tabKey === 'sec' && this.deliverables.sec) {
       const d = this.deliverables.sec;
       container.innerHTML = `
         <div class="ctf-card border-gold mb-3">
           <div style="font-family:var(--font-pixel); font-size:9px; color:var(--color-gold); margin-bottom:6px;">🚩 CTF SECRET FLAG</div>
-          <div class="flag-box"><span class="flag-value">${d.flag}</span></div>
+          <div class="flag-box"><span class="flag-value">${this.escapeHTML(d.flag)}</span></div>
         </div>
         <h4 style="font-family:var(--font-pixel); font-size:9px; margin-bottom:8px;">DAFTAR AUDIT KEAMANAN</h4>
         <table class="audit-table mb-3">
           <thead><tr><th>Celah</th><th>Status</th><th>Mitigasi</th></tr></thead>
           <tbody>
-            ${d.vulns.map(v => `<tr><td class="font-mono text-cyan">${v.name}</td><td><span class="status-mitigated">✓ ${v.status}</span></td><td>${v.fix}</td></tr>`).join('')}
+            ${d.vulns.map(v => `<tr><td class="font-mono text-cyan">${this.escapeHTML(v.name)}</td><td><span class="status-mitigated">✓ ${this.escapeHTML(v.status)}</span></td><td>${this.escapeHTML(v.fix)}</td></tr>`).join('')}
           </tbody>
         </table>
         <h4 style="font-family:var(--font-pixel); font-size:9px; margin-bottom:8px;">SCRIPT SOLVER (PYTHON)</h4>
@@ -460,15 +465,15 @@ if __name__ == '__main__':
     } else if (tabKey === 'summary') {
       container.innerHTML = `
         <div class="flex-between mb-3">
-          <h4 style="font-family:var(--font-pixel); font-size:9px;">HASIL EKSEKUSI TUGAS: ${this.currentTaskTopic || 'Tugas Aktif'}</h4>
-          <button onclick="window.pipelineEngine.exportFullMarkdown()" class="btn-launch" style="padding:6px 12px; font-size:9px;">📥 DOWNLOAD FILE .MD</button>
+          <h4 style="font-family:var(--font-pixel); font-size:9px;">HASIL EKSEKUSI TUGAS: ${this.escapeHTML(this.currentTaskTopic || 'Tugas Aktif')}</h4>
+          <button data-action="export-md" class="btn-launch" style="padding:6px 12px; font-size:9px;">📥 DOWNLOAD FILE .MD</button>
         </div>
         <p class="text-muted mb-3">Seluruh kode frontend, skema SQL, API backend, to-do list, dan audit keamanan siap dipakai.</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button onclick="switchTab('daily')" class="btn-pixel-small">📅 Buka To-Do List</button>
-          <button onclick="switchTab('fe')" class="btn-pixel-small">💻 Buka Kode Frontend</button>
-          <button onclick="switchTab('be')" class="btn-pixel-small">🗄️ Buka Skema SQL & API</button>
-          <button onclick="switchTab('sec')" class="btn-pixel-small">🛡️ Buka Flag & Keamanan</button>
+          <button data-action="switch-tab" data-tab="daily" class="btn-pixel-small">📅 Buka To-Do List</button>
+          <button data-action="switch-tab" data-tab="fe" class="btn-pixel-small">💻 Buka Kode Frontend</button>
+          <button data-action="switch-tab" data-tab="be" class="btn-pixel-small">🗄️ Buka Skema SQL & API</button>
+          <button data-action="switch-tab" data-tab="sec" class="btn-pixel-small">🛡️ Buka Flag & Keamanan</button>
         </div>
       `;
     }
@@ -478,9 +483,9 @@ if __name__ == '__main__':
     if (!this.dailyTasks || this.dailyTasks.length === 0) return '<div class="text-muted">Tidak ada tugas. Tambahkan di atas!</div>';
     return this.dailyTasks.map(t => `
       <div class="todo-item ${t.done ? 'todo-done' : ''}">
-        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="window.pipelineEngine.toggleTaskDone(${t.id})" class="todo-checkbox">
-        <span class="todo-text" onclick="window.pipelineEngine.toggleTaskDone(${t.id})">${this.escapeHTML(t.text)}</span>
-        <button onclick="window.pipelineEngine.deleteTask(${t.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:12px;">✕</button>
+        <input type="checkbox" ${t.done ? 'checked' : ''} data-action="toggle-task" data-id="${Number(t.id)}" class="todo-checkbox">
+        <span class="todo-text" data-action="toggle-task" data-id="${Number(t.id)}">${this.escapeHTML(t.text)}</span>
+        <button data-action="delete-task" data-id="${Number(t.id)}" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:12px;">✕</button>
       </div>
     `).join('');
   }
@@ -501,7 +506,7 @@ if __name__ == '__main__':
     if (!input || !input.value.trim()) return;
     this.dailyTasks.unshift({
       id: Date.now(),
-      text: input.value.trim(),
+      text: input.value.trim().slice(0, 200),
       done: false
     });
     this.saveTasks();
@@ -612,6 +617,17 @@ ${sec ? `- Flag: ${sec.flag}` : ''}
     a.click();
     URL.revokeObjectURL(url);
     if (window.studioAudio) window.studioAudio.playKey();
+  }
+
+  copyDeliverable(kind) {
+    const sources = {
+      fe: this.deliverables.fe?.codeSnippet,
+      sql: this.deliverables.be?.sqlSchema,
+      api: this.deliverables.be?.apiRoutes
+    };
+    const text = sources[kind];
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => alert('Disalin!'));
   }
 
   escapeHTML(str) {

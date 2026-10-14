@@ -20,8 +20,8 @@
     </div>
 
     <div class="header-status-group">
-      <button id="toggleAudioBtn" class="btn-header" onclick="toggleAudio()">🔊 AUDIO: ON</button>
-      <button class="btn-header" onclick="resetStudioPositions()">🔄 RESET POSISI</button>
+      <button id="toggleAudioBtn" class="btn-header" data-action="toggle-audio">🔊 AUDIO: ON</button>
+      <button class="btn-header" data-action="reset-positions">🔄 RESET POSISI</button>
     </div>
   </header>
 
@@ -37,23 +37,23 @@
       <!-- Agent Selection Quick Bar -->
       <div class="agent-chips-bar">
         <span style="font-family: var(--font-pixel); font-size: 8px; color: var(--text-muted); margin-right: 4px;">PILIH AGEN:</span>
-        <div class="agent-chip" data-bot="uiux" onclick="window.pixelStudio.selectAgent('uiux')">
+        <div class="agent-chip" data-bot="uiux" data-action="select-agent" data-agent="uiux">
           <span class="chip-dot" style="background:#00f3ff"></span>
           <span>[UI/UX]</span>
         </div>
-        <div class="agent-chip" data-bot="fe" onclick="window.pixelStudio.selectAgent('fe')">
+        <div class="agent-chip" data-bot="fe" data-action="select-agent" data-agent="fe">
           <span class="chip-dot" style="background:#3b82f6"></span>
           <span>[Frontend]</span>
         </div>
-        <div class="agent-chip active" data-bot="daily" onclick="window.pixelStudio.selectAgent('daily')">
+        <div class="agent-chip active" data-bot="daily" data-action="select-agent" data-agent="daily">
           <span class="chip-dot" style="background:#10b981"></span>
           <span>[Daily Assistant]</span>
         </div>
-        <div class="agent-chip" data-bot="be" onclick="window.pixelStudio.selectAgent('be')">
+        <div class="agent-chip" data-bot="be" data-action="select-agent" data-agent="be">
           <span class="chip-dot" style="background:#a855f7"></span>
           <span>[Backend]</span>
         </div>
-        <div class="agent-chip" data-bot="sec" onclick="window.pixelStudio.selectAgent('sec')">
+        <div class="agent-chip" data-bot="sec" data-action="select-agent" data-agent="sec">
           <span class="chip-dot" style="background:#ef4444"></span>
           <span>[Cyber Security]</span>
         </div>
@@ -85,7 +85,7 @@
           placeholder="Ketik tugas di sini (contoh: Jadwal Kuliah & Belajar Coding, Sistem Login, Booking Futsal)..."
           value="Jadwal Kuliah, Belajar Coding Vibe, & Target Olahraga Harian"
         >
-        <button id="launchPipelineBtn" class="btn-launch" onclick="launchTaskPipeline()">
+        <button id="launchPipelineBtn" class="btn-launch" data-action="launch-pipeline">
           <span>🚀</span> JALANKAN TIM (5-AGENT)
         </button>
       </div>
@@ -93,11 +93,11 @@
       <!-- Solo Commands -->
       <div class="solo-dispatch-group">
         <span class="presets-label">PERINTAH SOLO:</span>
-        <button class="btn-solo" style="color:#34d399; border-color:#059669; font-weight:bold;" onclick="launchSoloAgent('daily')">📅 Suruh Daily-Bot</button>
-        <button class="btn-solo" onclick="launchSoloAgent('fe')">💻 Suruh Frontend</button>
-        <button class="btn-solo" onclick="launchSoloAgent('be')">🗄️ Suruh Backend</button>
-        <button class="btn-solo" onclick="launchSoloAgent('uiux')">🎨 Suruh UI/UX</button>
-        <button class="btn-solo" onclick="launchSoloAgent('sec')">🛡️ Suruh Security</button>
+        <button class="btn-solo" style="color:#34d399; border-color:#059669; font-weight:bold;" data-action="launch-solo" data-agent="daily">📅 Suruh Daily-Bot</button>
+        <button class="btn-solo" data-action="launch-solo" data-agent="fe">💻 Suruh Frontend</button>
+        <button class="btn-solo" data-action="launch-solo" data-agent="be">🗄️ Suruh Backend</button>
+        <button class="btn-solo" data-action="launch-solo" data-agent="uiux">🎨 Suruh UI/UX</button>
+        <button class="btn-solo" data-action="launch-solo" data-agent="sec">🛡️ Suruh Security</button>
       </div>
 
       <!-- Stage Stepper Visualizer -->
@@ -130,6 +130,22 @@
       </div>
     </section>
 
+    <!-- DAILY-Bot AI Chat (Claude) -->
+    <section class="control-deck agent-chat-card" aria-label="Chat DAILY-Bot">
+      <div class="deck-title-row">
+        <div class="deck-title"><span>🤖</span> CHAT DAILY-BOT (AI)</div>
+        <button class="btn-pixel-small" data-action="agent-set-code">🔑 KODE AKSES</button>
+      </div>
+      <div id="agentChatLog" class="agent-chat-log" aria-live="polite">
+        <div class="agent-msg agent-msg-bot">Halo! Bilang aja mau ngapain hari ini, nanti aku atur to-do list, jadwal, dan Pomodoro-nya.</div>
+      </div>
+      <div class="input-container">
+        <input type="text" id="agentChatInput" class="task-input-field" maxlength="1000"
+          placeholder="Contoh: tambahin tugas laporan praktikum prioritas tinggi, terus susun jadwal sore ini">
+        <button id="agentChatSend" class="btn-launch" data-action="agent-send">KIRIM</button>
+      </div>
+    </section>
+
     <!-- Kontrol Agen Terpilih (Sederhana & Praktis) -->
     <section id="inspectorSection" class="inspector-card" style="padding:10px 14px;">
       <div class="flex-between">
@@ -139,10 +155,10 @@
           <span id="inspectStation" style="font-size:11px; color:#38bdf8">(Hub Produktivitas)</span>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('work')">💻 Kerja</button>
-          <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('coffee')">☕ Kopi</button>
-          <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('whiteboard')">📋 Papan</button>
-          <button class="btn-agent-cmd" onclick="window.pixelStudio.commandSelectedAgent('server')">🖥️ Server</button>
+          <button class="btn-agent-cmd" data-action="agent-cmd" data-cmd="work">💻 Kerja</button>
+          <button class="btn-agent-cmd" data-action="agent-cmd" data-cmd="coffee">☕ Kopi</button>
+          <button class="btn-agent-cmd" data-action="agent-cmd" data-cmd="whiteboard">📋 Papan</button>
+          <button class="btn-agent-cmd" data-action="agent-cmd" data-cmd="server">🖥️ Server</button>
         </div>
       </div>
     </section>
@@ -150,22 +166,22 @@
     <!-- Lembar Kerja / Output Per Role -->
     <section class="deliverable-card">
       <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchTab('daily')">
+        <button class="tab-btn active" data-action="switch-tab" data-tab="daily">
           <span>📅</span> Daily Tasks & Pomodoro
         </button>
-        <button class="tab-btn" onclick="switchTab('fe')">
+        <button class="tab-btn" data-action="switch-tab" data-tab="fe">
           <span>💻</span> Frontend
         </button>
-        <button class="tab-btn" onclick="switchTab('be')">
+        <button class="tab-btn" data-action="switch-tab" data-tab="be">
           <span>🗄️</span> Backend
         </button>
-        <button class="tab-btn" onclick="switchTab('uiux')">
+        <button class="tab-btn" data-action="switch-tab" data-tab="uiux">
           <span>🎨</span> UI/UX
         </button>
-        <button class="tab-btn" onclick="switchTab('sec')">
+        <button class="tab-btn" data-action="switch-tab" data-tab="sec">
           <span>🛡️</span> Security & CTF
         </button>
-        <button class="tab-btn" onclick="switchTab('summary')">
+        <button class="tab-btn" data-action="switch-tab" data-tab="summary">
           <span>📥</span> Export File
         </button>
       </div>
@@ -213,86 +229,7 @@
   <script src="js/studio.js"></script>
   <script src="js/pipeline.js"></script>
 
-  <script>
-    function toggleAudio() {
-      if (window.studioAudio) {
-        const isMuted = window.studioAudio.toggleMute();
-        const btn = document.getElementById('toggleAudioBtn');
-        if (btn) btn.textContent = isMuted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
-      }
-    }
-
-    function resetStudioPositions() {
-      if (window.pixelStudio) {
-        const studio = window.pixelStudio;
-        studio.agents.forEach(agent => {
-          const home = studio.stations[agent.stationId];
-          agent.targetX = home.x;
-          agent.targetY = home.y;
-          agent.state = 'WORKING';
-        });
-        if (window.studioAudio) window.studioAudio.playKey();
-        studio.logTerminal('[System] Posisi agen direset ke meja masing-masing.');
-      }
-    }
-
-    function launchTaskPipeline() {
-      const input = document.getElementById('taskTopicInput');
-      const topic = input ? input.value : 'Tugas Mandiri';
-      if (window.pipelineEngine) window.pipelineEngine.runPipeline(topic);
-    }
-
-    function launchSoloAgent(agentId) {
-      const input = document.getElementById('taskTopicInput');
-      const topic = input ? input.value : 'Tugas Mandiri';
-      if (window.pipelineEngine) window.pipelineEngine.runSingleAgent(agentId, topic);
-    }
-
-    function switchTab(tabKey) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-
-      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabKey));
-      if (activeBtn) activeBtn.classList.add('active');
-
-      const targetPanel = document.getElementById(`tabContent-${tabKey}`);
-      if (targetPanel) targetPanel.classList.add('active');
-
-      if (window.studioAudio) window.studioAudio.playKey();
-    }
-
-    window.updateInspectorCard = function(agent) {
-      const palette = window.pixelSprites.getPalette(agent.id);
-      document.getElementById('inspectBadge').style.background = palette.primary;
-      document.getElementById('inspectName').textContent = agent.name;
-      document.getElementById('inspectStation').textContent = `(${window.pixelStudio.stations[agent.stationId].name})`;
-
-      document.querySelectorAll('.agent-chip').forEach(chip => {
-        chip.classList.toggle('active', chip.dataset.bot === agent.id);
-      });
-    };
-
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        if (window.pipelineEngine) {
-          const defaultTopic = 'Jadwal Kuliah, Belajar Coding Vibe, & Target Olahraga Harian';
-          const domain = window.pipelineEngine.analyzeDomain(defaultTopic);
-          window.pipelineEngine.currentTaskTopic = defaultTopic;
-          window.pipelineEngine.deliverables.daily = window.pipelineEngine.generateDAILY(defaultTopic, domain);
-          window.pipelineEngine.deliverables.fe = window.pipelineEngine.generateFE(defaultTopic, domain);
-          window.pipelineEngine.deliverables.be = window.pipelineEngine.generateBE(defaultTopic, domain);
-          window.pipelineEngine.deliverables.uiux = window.pipelineEngine.generateUIUX(defaultTopic, domain);
-          window.pipelineEngine.deliverables.sec = window.pipelineEngine.generateSEC(defaultTopic, domain);
-
-          window.pipelineEngine.renderDeliverableTab('daily');
-          window.pipelineEngine.renderDeliverableTab('fe');
-          window.pipelineEngine.renderDeliverableTab('be');
-          window.pipelineEngine.renderDeliverableTab('uiux');
-          window.pipelineEngine.renderDeliverableTab('sec');
-          window.pipelineEngine.renderDeliverableTab('summary');
-        }
-      }, 300);
-    });
-  </script>
+  <script src="js/agentChat.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

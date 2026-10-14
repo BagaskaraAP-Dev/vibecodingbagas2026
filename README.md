@@ -37,6 +37,22 @@ Aplikasi web Mission Control Dashboard bergaya **2D Pixel Art & Retro Isometric 
 
 ---
 
+## 🤖 DAILY-Bot AI (Claude)
+
+Panel **CHAT DAILY-BOT** memakai Claude (`claude-opus-5-5`) lewat endpoint `POST /api/agent`. Bot bisa menambah, mencentang, dan menghapus to-do, menyusun jadwal hari ini, dan memulai Pomodoro. API key hanya ada di server, tidak pernah dikirim ke browser.
+
+Environment variable yang dibutuhkan:
+
+| Variable | Isi |
+|---|---|
+| `ANTHROPIC_API_KEY` | API key dari console.anthropic.com |
+| `AGENT_ACCESS_CODE` | Kode bebas buatanmu sendiri; diminta di browser lewat tombol 🔑 supaya orang lain tidak bisa memakai kuota API-mu |
+
+- **Lokal:** tambahkan kedua baris itu ke `.env.local`, lalu jalankan `npm run dev`.
+- **Vercel:** `vercel env add ANTHROPIC_API_KEY production` dan `vercel env add AGENT_ACCESS_CODE production`, lalu deploy ulang.
+
+Batas pemakaian: 30 request per 10 menit per IP (per instance server). Pasang juga spend limit di Anthropic Console.
+
 ## 🛠️ Menjalankan Secara Lokal
 
 ```bash

@@ -32,13 +32,34 @@ jobs:
           node -c public/js/sprites.js
           node -c public/js/studio.js
           node -c public/js/pipeline.js
+          node -c public/js/app.js
+          node -c public/js/agentChat.js
+          node -c lib/dailyAgent.js
+          node -c api/agent.js
+          node --test test/
           echo "All scripts verified successfully."
 
-      - name: 🧪 Test Health Endpoint Boot
+      - name: 🧪 Test Health Endpoint Boot & Security Headers
         run: |
           npm start &
           PID=$!
           sleep 3
           curl --fail http://localhost:3000/api/health || exit 1
+          H=$(curl -sI http://localhost:3000/)
+          for h in content-security-policy x-content-type-options x-frame-options referrer-policy; do
+            echo "$H" | grep -qi "^$h:" || { echo "Missing header: $h"; exit 1; }
+          done
+          echo "$H" | grep -qi "^content-security-policy:.*script-src 'self';" || { echo "CSP script-src weakened"; exit 1; }
+          if echo "$H" | grep -qiE '^(x-powered-by|access-control-allow-origin):'; then echo "Leaky header present"; exit 1; fi
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{"topic":{"$gt":1}}' http://localhost:3000/api/pipeline/run)
+          [ "$CODE" = "400" ] || { echo "Input validation regression: got $CODE"; exit 1; }
           kill $PID
-          echo "Server health check PASSED!"
+          echo "Server health & header checks PASSED!"
+
+  semgrep:
+    runs-on: ubuntu-latest
+    container: semgrep/semgrep:1.180.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: 🛡️ Semgrep (custom AppSec rules + JS/Express rulesets)
+        run: semgrep scan --error --metrics=off --config .semgrep/appsec.yml --config p/javascript --config p/expressjs public server.js api lib index.html

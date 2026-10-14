@@ -1,0 +1,59 @@
+rules:
+  - id: dom-html-sink-unencoded-interpolation
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      Interpolasi `${...}` di template HTML tanpa escapeHTML() (CWE-79).
+      Encode nilainya dengan this.escapeHTML(...), atau bangun DOM dengan textContent.
+    metadata: { cwe: "CWE-79", owasp: "A03:2021" }
+    patterns:
+      # Template literal yang berakhir di HTML sink, termasuk template di dalam .map() dan helper *HTML()
+      - pattern-either:
+          - pattern-inside: $EL.innerHTML = $RHS
+          - pattern-inside: $EL.outerHTML = $RHS
+          - pattern-inside: $EL.insertAdjacentHTML($POS, $RHS)
+          - patterns:
+              - pattern-inside: |
+                  $FN(...) { ... }
+              - metavariable-regex:
+                  metavariable: $FN
+                  regex: .*HTML$
+      - pattern: "`...${$X}...`"
+      - metavariable-pattern:
+          metavariable: $X
+          patterns:
+            - pattern-not: this.escapeHTML(...)
+            - pattern-not: escapeHTML(...)
+            - pattern-not: Number(...)
+            - pattern-not: $ARR.map(...).join(...)
+            - pattern-not: this.renderTodoListHTML()
+            - pattern-not: this.formatPomoTime()
+            - pattern-not: "$C ? '...' : '...'"
+            - pattern-not: "$C ? `...` : `...`"
+            # generateFE() sudah meng-encode topic; snippet sengaja dirender sebagai HTML untuk preview
+            - pattern-not: d.codeSnippet
+
+  - id: inline-event-handler-attribute
+    languages: [regex]
+    severity: ERROR
+    message: >-
+      Inline event handler (onclick=, onerror=, ...) diblokir oleh CSP `script-src 'self'`.
+      Gunakan data-action + delegasi di public/js/app.js.
+    pattern-regex: '\son[a-z]+\s*=\s*["''\\]'
+
+  - id: inline-script-block
+    languages: [regex]
+    severity: ERROR
+    message: Inline <script> tanpa src diblokir oleh CSP. Pindahkan ke file di public/js/.
+    paths:
+      include: ["*.html"]
+    pattern-regex: '<script(?![^>]*\bsrc=)[^>]*>'
+
+  - id: express-cors-wildcard
+    languages: [javascript]
+    severity: WARNING
+    message: 'cors() tanpa opsi origin menghasilkan Access-Control-Allow-Origin * (CWE-942); frontend same-origin tidak membutuhkannya.'
+    metadata: { cwe: "CWE-942" }
+    pattern-either:
+      - pattern: $APP.use(cors())
+      - pattern: '$APP.use(cors({origin: "*", ...}))'
