@@ -126,6 +126,19 @@ class PixelSpriteEngine {
           skin: '#ffe0bd',
           glow: 'rgba(16, 185, 129, 0.6)'
         };
+      case 'admin':
+        return {
+          id: 'admin',
+          name: 'ADMIN',
+          title: 'MOONCRUST Studio Admin',
+          primary: '#f59e0b',     // Gold
+          secondary: '#b45309',
+          accent: '#fde68a',
+          dark: '#1f2937',
+          hair: '#1f2937',
+          skin: '#ffd4b2',
+          glow: 'rgba(245, 158, 11, 0.6)'
+        };
       default:
         return {
           id: 'core',
@@ -193,6 +206,10 @@ class PixelSpriteEngine {
       // Daily planner green badge & pen pocket
       px(7, 11, '#6ee7b7', 2, 2);
       px(10, 12, '#ffffff', 1, 3);
+    } else if (botId === 'admin') {
+      // Admin ID badge
+      px(7, 12, '#ffffff', 2, 2);
+      px(7, 12, '#00f3ff', 2, 1);
     }
 
     // 3. ARMS & HANDS
@@ -253,6 +270,14 @@ class PixelSpriteEngine {
       px(7, 5, '#ef4444', 3, 2);
       px(8, 5, '#fde047', 1, 1);
       px(12, 6, '#111827', 1, 2);
+    } else if (botId === 'admin') {
+      // Gold crown + headset mic
+      px(6, 0, '#fbbf24', 8, 1);
+      px(6, -1, '#fbbf24', 1, 1);
+      px(9, -1, '#fbbf24', 2, 1);
+      px(13, -1, '#fbbf24', 1, 1);
+      px(4, 5, '#334155', 1, 3);
+      px(5, 8, '#334155', 3, 1);
     } else if (botId === 'daily') {
       // Smart green focus glasses
       px(6, 5, '#10b981', 8, 2);

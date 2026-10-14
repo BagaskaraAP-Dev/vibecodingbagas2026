@@ -29,7 +29,8 @@ class PixelStudioEngine {
       sec: { x: 720, y: 380, name: 'SecOps & CTF Radar Lab', icon: '🛡️' },
       coffee: { x: 440, y: 155, name: 'Caffeine Fuel Hub', icon: '☕' },
       whiteboard: { x: 260, y: 155, name: 'Agile Whiteboard', icon: '📋' },
-      serverRack: { x: 860, y: 155, name: 'Mainframe Cluster', icon: '🖥️' }
+      serverRack: { x: 860, y: 155, name: 'Mainframe Cluster', icon: '🖥️' },
+      admin: { x: 520, y: 192, name: 'MOONCRUST Admin Post', icon: '👑' }
     };
 
     // Initialize 5 Autonomous Specialist Agents
@@ -118,6 +119,23 @@ class PixelStudioEngine {
         stats: { tasksCompleted: 39, efficiency: '100%', focus: 'OWASP Pentest', status: 'Active' },
         bubble: { text: 'Scanning for SQLi & XSS...', timer: 160 },
         nextActionTick: 260
+      },
+      {
+        id: 'admin',
+        name: 'ADMIN',
+        role: 'MOONCRUST Studio Admin',
+        desc: 'Mengawasi kelima agen dari pos MOONCRUST. Tidak berpindah tempat.',
+        x: this.stations.admin.x,
+        y: this.stations.admin.y,
+        targetX: this.stations.admin.x,
+        targetY: this.stations.admin.y,
+        state: 'IDLE',
+        dir: 1,
+        stationId: 'admin',
+        fixed: true,
+        isSelected: false,
+        bubble: { text: 'Admin standby. Semua agen fokus kerja ✅', timer: 160 },
+        nextActionTick: 320
       }
     ];
 
@@ -224,68 +242,37 @@ class PixelStudioEngine {
   decideNextAutonomousAction(agent) {
     agent.nextActionTick = this.frameTick + 260 + Math.floor(Math.random() * 180);
 
+    if (agent.fixed) {
+      const adminLines = [
+        'Semua agen fokus kerja ✅',
+        'Monitoring 5 workstation...',
+        'Tidak ada yang keluyuran, mantap 👍',
+        'Butuh sesuatu? Chat DAILY-Bot di bawah.'
+      ];
+      this.triggerAgentBubble(agent.id, adminLines[Math.floor(Math.random() * adminLines.length)], 140);
+      return;
+    }
+
+    // Agents stay at their own desk; if a user command moved them away, they walk back on their own.
     const homeStation = this.stations[agent.stationId];
     const isAtHome = Math.hypot(agent.x - homeStation.x, agent.y - homeStation.y) < 10;
 
     if (!isAtHome) {
       agent.targetX = homeStation.x;
       agent.targetY = homeStation.y;
-      const returnQuotes = {
-        uiux: 'Kembali merapikan wireframe!',
-        fe: 'Lanjut nulis komponen UI...',
-        daily: 'Lanjut susun to-do list & Pomodoro ⏱️',
-        be: 'Memeriksa endpoint API...',
-        sec: 'Lanjut radar sweep & CTF!'
-      };
-      this.triggerAgentBubble(agent.id, returnQuotes[agent.id] || 'Kembali bekerja!', 100);
+      this.triggerAgentBubble(agent.id, 'Kembali ke meja, lanjut kerja!', 100);
       return;
     }
 
-    const actions = ['coffee', 'whiteboard', 'serverRack', 'visitPeer', 'stayWorking'];
-    const choice = actions[Math.floor(Math.random() * actions.length)];
-
-    if (choice === 'coffee') {
-      agent.targetX = this.stations.coffee.x + (Math.random() * 20 - 10);
-      agent.targetY = this.stations.coffee.y + 20;
-      this.triggerAgentBubble(agent.id, 'Ambil kopi espresso dulu ☕', 120);
-      this.logTerminal(`[${agent.name}] Mengambil espresso segar di Caffeine Hub.`);
-    } else if (choice === 'whiteboard') {
-      agent.targetX = this.stations.whiteboard.x + (Math.random() * 30 - 15);
-      agent.targetY = this.stations.whiteboard.y + 25;
-      this.triggerAgentBubble(agent.id, 'Cek sprint task di papan 📋', 120);
-      this.logTerminal(`[${agent.name}] Meninjau papan tugas Agile.`);
-    } else if (choice === 'serverRack' && (agent.id === 'be' || agent.id === 'sec')) {
-      agent.targetX = this.stations.serverRack.x - 20;
-      agent.targetY = this.stations.serverRack.y + 20;
-      this.triggerAgentBubble(agent.id, 'Cek server cluster 🖥️', 120);
-      this.logTerminal(`[${agent.name}] Memeriksa status mainframe server.`);
-    } else if (choice === 'visitPeer') {
-      const otherAgents = this.agents.filter(a => a.id !== agent.id);
-      const peer = otherAgents[Math.floor(Math.random() * otherAgents.length)];
-      agent.targetX = peer.x + (agent.x < peer.x ? -35 : 35);
-      agent.targetY = peer.y;
-
-      const chatDialogues = {
-        uiux: [`Halo ${peer.name}, user flow sudah sesuai?`, 'Token palet warna siap diintegrasikan!'],
-        fe: [`Sinkronisasi komponen Tailwind dengan ${peer.name}`, 'Ukuran bundle teroptimasi < 30KB!'],
-        daily: [`Hey ${peer.name}, jangan lupa istirahat & minum air!`, 'Target to-do hari ini sudah masuk jadwal!'],
-        be: [`Validasi skema database 100% lulus`, `Mengirim payload JWT auth ke ${peer.name}`],
-        sec: [`Audit OWASP: 0 celah kritis ditemukan!`, `Simulasi decrypt payload CTF selesai.`]
-      };
-      const dialog = chatDialogues[agent.id][Math.floor(Math.random() * chatDialogues[agent.id].length)];
-      this.triggerAgentBubble(agent.id, dialog, 140);
-      this.logTerminal(`[${agent.name}] Berbicara ke [${peer.name}]: "${dialog}"`);
-    } else {
-      const workThoughts = {
-        uiux: ['Figma tokens synced!', 'Cek kontras WCAG AA...', 'Merapikan touch target mobile'],
-        fe: ['Flexbox rapi sempurna', 'Menambahkan transisi CSS halus', 'Optimasi render DOM'],
-        daily: ['Sesi Pomodoro berjalan lancar ⏱️', 'Prioritas: Vibe coding & Kuliah', 'Jadwal harian tertata rapi!'],
-        be: ['Query database selesai: 1.4ms', 'REST API response 200 OK', 'JWT bearer token diperbarui'],
-        sec: ['Checklist OWASP Top 10: CLEAR', 'Cipher decrypted: SHA-256 valid', 'Sanitasi input aktif']
-      };
-      const quote = workThoughts[agent.id][Math.floor(Math.random() * workThoughts[agent.id].length)];
-      this.triggerAgentBubble(agent.id, quote, 130);
-    }
+    const workThoughts = {
+      uiux: ['Figma tokens synced!', 'Cek kontras WCAG AA...', 'Merapikan touch target mobile'],
+      fe: ['Flexbox rapi sempurna', 'Menambahkan transisi CSS halus', 'Optimasi render DOM'],
+      daily: ['Sesi Pomodoro berjalan lancar ⏱️', 'Prioritas: Vibe coding & Kuliah', 'Jadwal harian tertata rapi!'],
+      be: ['Query database selesai: 1.4ms', 'REST API response 200 OK', 'JWT bearer token diperbarui'],
+      sec: ['Checklist OWASP Top 10: CLEAR', 'Header keamanan aktif', 'Sanitasi input aktif']
+    };
+    const quote = workThoughts[agent.id][Math.floor(Math.random() * workThoughts[agent.id].length)];
+    this.triggerAgentBubble(agent.id, quote, 130);
   }
 
   triggerAgentBubble(agentId, text, duration = 120) {
@@ -327,7 +314,7 @@ class PixelStudioEngine {
 
         if (this.selectedAgentId) {
           const selected = this.agents.find(a => a.id === this.selectedAgentId);
-          if (selected) {
+          if (selected && !selected.fixed) {
             selected.targetX = station.x;
             selected.targetY = station.y + (key === 'coffee' || key === 'whiteboard' ? 20 : 0);
             this.triggerAgentBubble(selected.id, `Menuju ke ${station.name}!`, 120);
@@ -342,7 +329,7 @@ class PixelStudioEngine {
 
     if (clickY > 154 && this.selectedAgentId) {
       const selected = this.agents.find(a => a.id === this.selectedAgentId);
-      if (selected) {
+      if (selected && !selected.fixed) {
         selected.targetX = Math.round(clickX - 24);
         selected.targetY = Math.round(clickY - 26);
         this.waypoints.push({ x: clickX, y: clickY, radius: 4, life: 25, color: '#00f3ff' });
@@ -365,7 +352,8 @@ class PixelStudioEngine {
         fe: 'FE-Bot online! Komponen HTML5 & Tailwind siap dirakit.',
         daily: 'DAILY-Bot hadir! Yuk susun to-do list, jadwal kuliah, atau mulai Pomodoro focus timer!',
         be: 'BE-Bot aktif! Skema SQL, REST API & auth siap dieksekusi.',
-        sec: 'SEC-Bot siaga! Siap audit celah OWASP & uji tantangan CTF.'
+        sec: 'SEC-Bot siaga! Siap audit celah OWASP & uji tantangan CTF.',
+        admin: 'Admin MOONCRUST di sini. Semua agen sedang fokus kerja.'
       };
       this.triggerAgentBubble(agent.id, greetings[agent.id] || 'Agen siap bekerja!', 140);
       this.logTerminal(`[Select] [${agent.name}] dipilih. Role aktif.`);
@@ -380,6 +368,10 @@ class PixelStudioEngine {
     if (!this.selectedAgentId) return;
     const agent = this.agents.find(a => a.id === this.selectedAgentId);
     if (!agent) return;
+    if (agent.fixed) {
+      this.triggerAgentBubble(agent.id, 'Admin tetap berjaga di pos MOONCRUST.', 120);
+      return;
+    }
 
     if (action === 'work') {
       const home = this.stations[agent.stationId];
@@ -427,7 +419,8 @@ class PixelStudioEngine {
       fe: 'Rig Frontend: Dual monitor 4K, keyboard mekanikal RGB, preview live layout.',
       daily: 'Hub Produktivitas Harian: Kalender digital, to-do notepad, checklist kebiasaan, dan jam Pomodoro.',
       be: 'Konsol Backend: Terminal Linux, monitor skema ERD PostgreSQL, dan pipeline API.',
-      sec: 'Lab SecOps: Radar aktif 360°, monitor matrix hijau, shield verifikasi celah OWASP.'
+      sec: 'Lab SecOps: Radar aktif 360°, monitor matrix hijau, shield verifikasi celah OWASP.',
+      admin: 'Pos Admin MOONCRUST: memantau semua workstation dari bawah papan neon.'
     };
     const tipText = tips[stationKey] || s.name;
     const banner = document.getElementById('liveStatusTicker');
@@ -796,6 +789,23 @@ class PixelStudioEngine {
     this.drawBEStation(ctx, this.stations.be.x - 40, this.stations.be.y - 30);
     // 5. SEC Workstation (Bottom-Right)
     this.drawSECStation(ctx, this.stations.sec.x - 40, this.stations.sec.y - 30);
+    // 6. Admin post under the MOONCRUST sign
+    this.drawAdminPost(ctx, this.stations.admin.x, this.stations.admin.y);
+  }
+
+  drawAdminPost(ctx, x, y) {
+    // Podium with a gold-trimmed monitor the admin watches over
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(x + 4, y + 48, 40, 14);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(x + 4, y + 48, 40, 2);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(x + 44, y + 22, 22, 16);
+    ctx.fillStyle = (Math.floor(this.frameTick / 30) % 2) ? '#10b981' : '#00f3ff';
+    ctx.fillRect(x + 47, y + 25, 16, 10);
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(x + 53, y + 38, 4, 12);
+    ctx.fillRect(x + 48, y + 50, 14, 3);
   }
 
   drawUIUXStation(ctx, x, y) {
